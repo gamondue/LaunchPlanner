@@ -1,0 +1,1 @@
+Se compie un errore durante la lettura del file, poi si rifiuta di leggerlo dopo che lo si è accomodato con il notepad. 

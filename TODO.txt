@@ -1,0 +1,1 @@
+Non minimizzare il programma all'inizio, ma renderlo solo invisibile, ma lasciarlo lì dov'è

@@ -330,17 +330,24 @@ public sealed class ViewModelTests
     }
 
     [Fact]
-    public void AddingSelectsTheNewEvent()
+    public void AddingReturnsToNewEventMode()
     {
         var f = new Fixture();
         f.Events.Refresh();
         f.Events.Description = "aggiunto";
+        f.Events.StartTime = "10:20:30";
+        f.Events.FinishTime = "10:20:30";
         f.Events.SelectedPeriod = PeriodOption.All.Single(o => o.Period == Periodicity.Hour);
 
         f.Events.AddCommand.Execute(null);
 
         Assert.Equal("aggiunto", Assert.Single(f.Store.Events).Description);
-        Assert.Same(f.Events.Rows[0], f.Events.SelectedRow);
+        Assert.Null(f.Events.SelectedRow);
+        Assert.Null(f.Events.SelectedPeriod);
+        Assert.Equal("", f.Events.Description);
+        Assert.Equal("", f.Events.Url);
+        Assert.Equal("", f.Events.StartTime);
+        Assert.Equal("", f.Events.FinishTime);
     }
 
     [Fact]
@@ -353,6 +360,65 @@ public sealed class ViewModelTests
 
         Assert.Empty(f.Store.Events);
         Assert.Equal("Definire la periodicità dell'evento", f.Events.Message);
+    }
+
+    [Fact]
+    public void ClearingTheFormDeselectsAndResetsAllFields()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        f.Events.Refresh();
+        f.Events.SelectedRow = f.Events.Rows[0];
+
+        f.Events.ClearCommand.Execute(null);
+
+        Assert.Null(f.Events.SelectedRow);
+        Assert.Null(f.Events.SelectedPeriod);
+        Assert.Equal("", f.Events.Description);
+        Assert.Equal("", f.Events.Url);
+        Assert.Equal("", f.Events.StartTime);
+        Assert.Equal("", f.Events.FinishTime);
+        Assert.Equal("0", f.Events.DurationDays);
+        Assert.Equal("0", f.Events.DurationHours);
+        Assert.Equal("0", f.Events.DurationMinutes);
+        Assert.Equal("0", f.Events.DurationSeconds);
+        Assert.True(f.Events.StartDate.HasValue);
+        Assert.True(f.Events.FinishDate.HasValue);
+        Assert.Equal(f.Events.StartDate, f.Events.FinishDate);
+    }
+
+    [Fact]
+    public void StartNow_SetsStartNow_AndEndWithOffset()
+    {
+        var f = new Fixture();
+        f.Events.NowOffsetValue = "2";
+        f.Events.SelectedNowOffsetUnit = "h";
+        var beforeStart = DateTime.Now;
+        var beforeFinish = beforeStart.AddHours(2);
+
+        f.Events.StartNowCommand.Execute(null);
+
+        var afterStart = DateTime.Now;
+        var afterFinish = afterStart.AddHours(2);
+        Assert.True(f.Events.StartDate.HasValue);
+        Assert.True(f.Events.FinishDate.HasValue);
+
+        var start = f.Events.StartDate!.Value.Date + TimeOnly.ParseExact(f.Events.StartTime, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture).ToTimeSpan();
+        var finish = f.Events.FinishDate!.Value.Date + TimeOnly.ParseExact(f.Events.FinishTime, "HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture).ToTimeSpan();
+
+        Assert.InRange(start, beforeStart.AddSeconds(-1), afterStart.AddSeconds(1));
+        Assert.InRange(finish, beforeFinish.AddSeconds(-1), afterFinish.AddSeconds(1));
+    }
+
+    [Fact]
+    public void StartNow_ShowsAnError_WhenOffsetIsInvalid()
+    {
+        var f = new Fixture();
+        f.Events.NowOffsetValue = "abc";
+
+        f.Events.StartNowCommand.Execute(null);
+
+        Assert.Equal("Offset Ora non valido: inserire numero e unità.", f.Events.Message);
     }
 
     [Fact]

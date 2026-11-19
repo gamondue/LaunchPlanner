@@ -18,34 +18,49 @@
         </Style>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*" RowSpacing="8" Padding="16">
+    <Grid RowDefinitions="2*,2.55*" RowSpacing="8" Padding="16">
         <ScrollView MaximumHeightRequest="340">
             <VerticalStackLayout Spacing="4">
                 <FlexLayout Wrap="Wrap" JustifyContent="Start">
                     <VerticalStackLayout Style="{StaticResource FieldGroup}">
                         <Label Text="{x:Static res:Strings.Events_Start}" />
                         <HorizontalStackLayout Spacing="4">
-                            <DatePicker Date="{Binding StartDate}" />
-                            <Entry Text="{Binding StartTime}" Placeholder="hh:mm:ss" WidthRequest="96" />
+                            <DatePicker Date="{Binding StartDate}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_StartDate}" />
+                            <Entry Text="{Binding StartTime}" Placeholder="hh:mm:ss" WidthRequest="96" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_StartTime}" />
+                            <Button Text="{x:Static res:Strings.Events_Now}" Command="{Binding StartNowCommand}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Now}" />
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Style="{StaticResource FieldGroup}">
                         <Label Text="{x:Static res:Strings.Events_Finish}" />
                         <HorizontalStackLayout Spacing="4">
-                            <DatePicker Date="{Binding FinishDate}" />
-                            <Entry Text="{Binding FinishTime}" Placeholder="hh:mm:ss" WidthRequest="96" />
+                            <DatePicker Date="{Binding FinishDate}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EndDate}" />
+                            <Entry Text="{Binding FinishTime}" Placeholder="hh:mm:ss" WidthRequest="96" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EndTime}" />
+                            <Label Text="+" VerticalTextAlignment="Center" />
+                            <Entry Text="{Binding NowOffsetValue}" Keyboard="Numeric" WidthRequest="56" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EndOffsetValue}" />
+                            <Picker ItemsSource="{Binding NowOffsetUnits}"
+                                    SelectedItem="{Binding SelectedNowOffsetUnit}"
+                                    WidthRequest="120"
+                                    ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EndOffsetUnit}" />
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
+                </FlexLayout>
 
+                <FlexLayout Wrap="Wrap" JustifyContent="Start">
                     <VerticalStackLayout Style="{StaticResource FieldGroup}">
                         <Label Text="{x:Static res:Strings.Events_Duration}" />
-                        <HorizontalStackLayout Spacing="4">
-                            <Entry Text="{Binding DurationDays}" Style="{StaticResource DurationEntry}" />
-                            <Entry Text="{Binding DurationHours}" Style="{StaticResource DurationEntry}" />
-                            <Entry Text="{Binding DurationMinutes}" Style="{StaticResource DurationEntry}" />
-                            <Entry Text="{Binding DurationSeconds}" Style="{StaticResource DurationEntry}" />
-                        </HorizontalStackLayout>
+                        <Grid ColumnDefinitions="56,56,56,56"
+                              RowDefinitions="Auto,Auto"
+                              ColumnSpacing="4">
+                            <Label Grid.Row="0" Grid.Column="0" Text="d" HorizontalTextAlignment="Center" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="h" HorizontalTextAlignment="Center" />
+                            <Label Grid.Row="0" Grid.Column="2" Text="min" HorizontalTextAlignment="Center" />
+                            <Label Grid.Row="0" Grid.Column="3" Text="s" HorizontalTextAlignment="Center" />
+                            <Entry Grid.Row="1" Grid.Column="0" Text="{Binding DurationDays}" Style="{StaticResource DurationEntry}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_DurationDays}" />
+                            <Entry Grid.Row="1" Grid.Column="1" Text="{Binding DurationHours}" Style="{StaticResource DurationEntry}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_DurationHours}" />
+                            <Entry Grid.Row="1" Grid.Column="2" Text="{Binding DurationMinutes}" Style="{StaticResource DurationEntry}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_DurationMinutes}" />
+                            <Entry Grid.Row="1" Grid.Column="3" Text="{Binding DurationSeconds}" Style="{StaticResource DurationEntry}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_DurationSeconds}" />
+                        </Grid>
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Style="{StaticResource FieldGroup}">
@@ -53,26 +68,28 @@
                         <Picker ItemsSource="{Binding Periods}"
                                 SelectedItem="{Binding SelectedPeriod}"
                                 ItemDisplayBinding="{Binding Caption, x:DataType=models:PeriodOption}"
-                                WidthRequest="160" />
+                                WidthRequest="160"
+                                ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Period}" />
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Style="{StaticResource FieldGroup}">
                         <Label Text="{x:Static res:Strings.Events_Enabled}" />
-                        <CheckBox IsChecked="{Binding IsEventEnabled}" />
+                        <CheckBox IsChecked="{Binding IsEventEnabled}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Enabled}" />
                     </VerticalStackLayout>
                 </FlexLayout>
 
                 <Label Text="{x:Static res:Strings.Events_Description}" />
-                <Entry Text="{Binding Description}" />
+                <Entry Text="{Binding Description}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Description}" />
                 <Label Text="{x:Static res:Strings.Events_Url}" />
-                <Entry Text="{Binding Url}" />
+                <Entry Text="{Binding Url}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Url}" />
 
                 <FlexLayout Wrap="Wrap" JustifyContent="Start" Margin="0,8,0,0">
-                    <Button Text="{x:Static res:Strings.Events_Add}" Command="{Binding AddCommand}" Margin="0,0,8,8" />
-                    <Button Text="{x:Static res:Strings.Events_Test}" Command="{Binding TestCommand}" Margin="0,0,8,8" />
-                    <Button Text="{x:Static res:Strings.Events_Delete}" Command="{Binding EraseCommand}" Margin="0,0,8,8" />
-                    <Button Text="{x:Static res:Strings.Events_Save}" Command="{Binding SaveCommand}" Margin="0,0,8,8" />
-                    <Button Text="{x:Static res:Strings.Events_Close}" Command="{Binding CloseCommand}" Margin="0,0,8,8" />
+                    <Button Text="{x:Static res:Strings.Events_Clear}" Command="{Binding ClearCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Clear}" />
+                    <Button Text="{x:Static res:Strings.Events_Add}" Command="{Binding AddCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Add}" />
+                    <Button Text="{x:Static res:Strings.Events_Test}" Command="{Binding TestCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Test}" />
+                    <Button Text="{x:Static res:Strings.Events_Delete}" Command="{Binding EraseCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Delete}" />
+                    <Button Text="{x:Static res:Strings.Events_Save}" Command="{Binding SaveCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Save}" />
+                    <Button Text="{x:Static res:Strings.Events_Close}" Command="{Binding CloseCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Close}" />
                 </FlexLayout>
                 <Label Text="{Binding Message}" TextColor="{StaticResource Primary}" />
             </VerticalStackLayout>
@@ -81,7 +98,8 @@
         <CollectionView Grid.Row="1"
                         ItemsSource="{Binding Rows}"
                         SelectedItem="{Binding SelectedRow}"
-                        SelectionMode="Single">
+                        SelectionMode="Single"
+                        ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EventList}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:EventRow">
                     <VerticalStackLayout Padding="8" Spacing="2">

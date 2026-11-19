@@ -15,16 +15,40 @@
   <data name="Events_Title" xml:space="preserve"><value>Configurazione eventi</value></data>
   <data name="Events_Start" xml:space="preserve"><value>Inizio</value></data>
   <data name="Events_Finish" xml:space="preserve"><value>Fine</value></data>
-  <data name="Events_Duration" xml:space="preserve"><value>Durata (gg, h, min, s)</value></data>
+  <data name="Events_Now" xml:space="preserve"><value>Ora</value></data>
+  <data name="Events_Duration" xml:space="preserve"><value>Durata</value></data>
   <data name="Events_Period" xml:space="preserve"><value>Periodo</value></data>
   <data name="Events_Enabled" xml:space="preserve"><value>Abilitato</value></data>
   <data name="Events_Description" xml:space="preserve"><value>Descrizione</value></data>
   <data name="Events_Url" xml:space="preserve"><value>URL o path e nome file</value></data>
+  <data name="Events_Clear" xml:space="preserve"><value>Pulisci</value></data>
   <data name="Events_Add" xml:space="preserve"><value>Aggiungi</value></data>
   <data name="Events_Test" xml:space="preserve"><value>Prova</value></data>
   <data name="Events_Delete" xml:space="preserve"><value>Elimina</value></data>
-  <data name="Events_Save" xml:space="preserve"><value>Salva modifiche</value></data>
+  <data name="Events_Save" xml:space="preserve"><value>Salva</value></data>
   <data name="Events_Close" xml:space="preserve"><value>Chiudi</value></data>
+  <data name="Events_Tooltip_StartDate" xml:space="preserve"><value>Seleziona la data di inizio.</value></data>
+  <data name="Events_Tooltip_StartTime" xml:space="preserve"><value>Inserisci l'orario di inizio (hh:mm:ss).</value></data>
+  <data name="Events_Tooltip_Now" xml:space="preserve"><value>Imposta Inizio ad adesso e Fine ad adesso più l'offset selezionato.</value></data>
+  <data name="Events_Tooltip_EndDate" xml:space="preserve"><value>Seleziona la data di fine.</value></data>
+  <data name="Events_Tooltip_EndTime" xml:space="preserve"><value>Inserisci l'orario di fine (hh:mm:ss).</value></data>
+  <data name="Events_Tooltip_EndOffsetValue" xml:space="preserve"><value>Valore dell'offset usato da Ora per la Fine.</value></data>
+  <data name="Events_Tooltip_EndOffsetUnit" xml:space="preserve"><value>Unità dell'offset usata da Ora per la Fine.</value></data>
+  <data name="Events_Tooltip_DurationDays" xml:space="preserve"><value>Giorni della durata.</value></data>
+  <data name="Events_Tooltip_DurationHours" xml:space="preserve"><value>Ore della durata.</value></data>
+  <data name="Events_Tooltip_DurationMinutes" xml:space="preserve"><value>Minuti della durata.</value></data>
+  <data name="Events_Tooltip_DurationSeconds" xml:space="preserve"><value>Secondi della durata.</value></data>
+  <data name="Events_Tooltip_Period" xml:space="preserve"><value>Seleziona quanto spesso si ripete l'evento.</value></data>
+  <data name="Events_Tooltip_Enabled" xml:space="preserve"><value>Abilita o disabilita l'evento.</value></data>
+  <data name="Events_Tooltip_Description" xml:space="preserve"><value>Inserisci una breve descrizione.</value></data>
+  <data name="Events_Tooltip_Url" xml:space="preserve"><value>Inserisci l'URL o il percorso file da avviare.</value></data>
+  <data name="Events_Tooltip_Clear" xml:space="preserve"><value>Pulisce il modulo e ripristina i valori predefiniti.</value></data>
+  <data name="Events_Tooltip_Add" xml:space="preserve"><value>Aggiunge l'evento alla lista.</value></data>
+  <data name="Events_Tooltip_Test" xml:space="preserve"><value>Prova l'URL o il percorso file corrente.</value></data>
+  <data name="Events_Tooltip_Delete" xml:space="preserve"><value>Elimina l'evento selezionato.</value></data>
+  <data name="Events_Tooltip_Save" xml:space="preserve"><value>Salva le modifiche fatte a tutti gli eventi.</value></data>
+  <data name="Events_Tooltip_Close" xml:space="preserve"><value>Chiude l'editor eventi.</value></data>
+  <data name="Events_Tooltip_EventList" xml:space="preserve"><value>Seleziona un evento per modificarlo.</value></data>
   <data name="EventRow_Duration" xml:space="preserve"><value>durata</value></data>
 
   <data name="Log_Reload" xml:space="preserve"><value>Aggiornamento da file</value></data>
@@ -72,6 +96,7 @@
 
   <data name="Error_PeriodRequired" xml:space="preserve"><value>Definire la periodicità dell'evento</value></data>
   <data name="Error_InvalidTime" xml:space="preserve"><value>Orario non valido: usare il formato ore:minuti:secondi</value></data>
+  <data name="Error_InvalidNowOffset" xml:space="preserve"><value>Offset Ora non valido: inserire numero e unità.</value></data>
   <data name="Error_UrlRequired" xml:space="preserve"><value>Inserire un URI o percorso file.</value></data>
   <data name="Error_CannotWriteFile" xml:space="preserve"><value>Non è stato possibile scrivere il file: {0}</value></data>
   <data name="Error_CannotOpenTarget" xml:space="preserve"><value>Impossibile aprire l'URI/file: {0}</value></data>

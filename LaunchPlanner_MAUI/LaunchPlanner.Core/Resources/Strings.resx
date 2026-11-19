@@ -15,16 +15,40 @@
   <data name="Events_Title" xml:space="preserve"><value>Event configuration</value></data>
   <data name="Events_Start" xml:space="preserve"><value>Start</value></data>
   <data name="Events_Finish" xml:space="preserve"><value>End</value></data>
-  <data name="Events_Duration" xml:space="preserve"><value>Duration (d, h, min, s)</value></data>
+  <data name="Events_Now" xml:space="preserve"><value>Now</value></data>
+  <data name="Events_Duration" xml:space="preserve"><value>Duration</value></data>
   <data name="Events_Period" xml:space="preserve"><value>Period</value></data>
   <data name="Events_Enabled" xml:space="preserve"><value>Enabled</value></data>
   <data name="Events_Description" xml:space="preserve"><value>Description</value></data>
   <data name="Events_Url" xml:space="preserve"><value>URL or file path and name</value></data>
+  <data name="Events_Clear" xml:space="preserve"><value>Clear</value></data>
   <data name="Events_Add" xml:space="preserve"><value>Add</value></data>
   <data name="Events_Test" xml:space="preserve"><value>Test</value></data>
   <data name="Events_Delete" xml:space="preserve"><value>Delete</value></data>
-  <data name="Events_Save" xml:space="preserve"><value>Save changes</value></data>
+  <data name="Events_Save" xml:space="preserve"><value>Save</value></data>
   <data name="Events_Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Events_Tooltip_StartDate" xml:space="preserve"><value>Select the start date.</value></data>
+  <data name="Events_Tooltip_StartTime" xml:space="preserve"><value>Enter the start time (hh:mm:ss).</value></data>
+  <data name="Events_Tooltip_Now" xml:space="preserve"><value>Set Start to now and End to now plus the selected offset.</value></data>
+  <data name="Events_Tooltip_EndDate" xml:space="preserve"><value>Select the end date.</value></data>
+  <data name="Events_Tooltip_EndTime" xml:space="preserve"><value>Enter the end time (hh:mm:ss).</value></data>
+  <data name="Events_Tooltip_EndOffsetValue" xml:space="preserve"><value>Offset amount used by Now for End.</value></data>
+  <data name="Events_Tooltip_EndOffsetUnit" xml:space="preserve"><value>Offset unit used by Now for End.</value></data>
+  <data name="Events_Tooltip_DurationDays" xml:space="preserve"><value>Duration days.</value></data>
+  <data name="Events_Tooltip_DurationHours" xml:space="preserve"><value>Duration hours.</value></data>
+  <data name="Events_Tooltip_DurationMinutes" xml:space="preserve"><value>Duration minutes.</value></data>
+  <data name="Events_Tooltip_DurationSeconds" xml:space="preserve"><value>Duration seconds.</value></data>
+  <data name="Events_Tooltip_Period" xml:space="preserve"><value>Select how often the event repeats.</value></data>
+  <data name="Events_Tooltip_Enabled" xml:space="preserve"><value>Enable or disable the event.</value></data>
+  <data name="Events_Tooltip_Description" xml:space="preserve"><value>Enter a short description.</value></data>
+  <data name="Events_Tooltip_Url" xml:space="preserve"><value>Enter the URL or file path to launch.</value></data>
+  <data name="Events_Tooltip_Clear" xml:space="preserve"><value>Clear the form and reset defaults.</value></data>
+  <data name="Events_Tooltip_Add" xml:space="preserve"><value>Add the event to the list.</value></data>
+  <data name="Events_Tooltip_Test" xml:space="preserve"><value>Test the current URL or file path.</value></data>
+  <data name="Events_Tooltip_Delete" xml:space="preserve"><value>Delete the selected event.</value></data>
+  <data name="Events_Tooltip_Save" xml:space="preserve"><value>Save the modifications done to all event.</value></data>
+  <data name="Events_Tooltip_Close" xml:space="preserve"><value>Close the event editor.</value></data>
+  <data name="Events_Tooltip_EventList" xml:space="preserve"><value>Select an event to edit it.</value></data>
   <data name="EventRow_Duration" xml:space="preserve"><value>duration</value></data>
 
   <data name="Log_Reload" xml:space="preserve"><value>Reload from file</value></data>
@@ -72,6 +96,7 @@
 
   <data name="Error_PeriodRequired" xml:space="preserve"><value>Choose how often the event repeats</value></data>
   <data name="Error_InvalidTime" xml:space="preserve"><value>Invalid time: use the format hours:minutes:seconds</value></data>
+  <data name="Error_InvalidNowOffset" xml:space="preserve"><value>Invalid Now offset: enter a number and unit.</value></data>
   <data name="Error_UrlRequired" xml:space="preserve"><value>Enter a URI or file path.</value></data>
   <data name="Error_CannotWriteFile" xml:space="preserve"><value>The file could not be written: {0}</value><comment>{0} = system message</comment></data>
   <data name="Error_CannotOpenTarget" xml:space="preserve"><value>Cannot open the URI/file: {0}</value><comment>{0} = system message</comment></data>

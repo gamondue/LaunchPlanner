@@ -11,8 +11,8 @@ namespace LaunchPlanner.Core.ViewModels;
 public sealed partial class EventsViewModel : ObservableObject
 {
     private const string TimeFormat = "HH:mm:ss";
-    private const int DefaultDurationSeconds = 5; // sotto i 5 secondi l'evento rischia di non partire
     private const int MaximumDurationField = 9999; // i valori enormi non stanno in un TimeSpan
+    private static readonly IReadOnlyList<string> nowOffsetUnits = ["s", "min", "h", "days", "months", "years"];
 
     private readonly EventStore store;
     private readonly IEventLauncher launcher;
@@ -32,12 +32,13 @@ public sealed partial class EventsViewModel : ObservableObject
         this.log = log;
         store.Changed += Refresh;
         Refresh();
-        ClearForm();
+        PrepareNewEventForm();
     }
 
     public ObservableCollection<EventRow> Rows { get; } = [];
 
     public IReadOnlyList<PeriodOption> Periods => PeriodOption.All;
+    public IReadOnlyList<string> NowOffsetUnits => nowOffsetUnits;
 
     [ObservableProperty]
     public partial EventRow? SelectedRow { get; set; }
@@ -53,6 +54,12 @@ public sealed partial class EventsViewModel : ObservableObject
 
     [ObservableProperty]
     public partial string FinishTime { get; set; } = "";
+
+    [ObservableProperty]
+    public partial string NowOffsetValue { get; set; } = "0";
+
+    [ObservableProperty]
+    public partial string? SelectedNowOffsetUnit { get; set; }
 
     [ObservableProperty]
     public partial string DurationDays { get; set; } = "0";
@@ -133,7 +140,14 @@ public sealed partial class EventsViewModel : ObservableObject
 
         Message = "";
         store.Add(ev);
-        SelectedRow = Rows[^1];
+        PrepareNewEventForm();
+    }
+
+    [RelayCommand]
+    private void Clear()
+    {
+        Message = "";
+        PrepareNewEventForm();
     }
 
     [RelayCommand]
@@ -182,15 +196,47 @@ public sealed partial class EventsViewModel : ObservableObject
     [RelayCommand]
     private void Close() => shell.CloseEditor();
 
-    private void ClearForm()
+    [RelayCommand]
+    private void StartNow()
+    {
+        if (!TryReadNowOffset(out var amount, out var unit))
+        {
+            Message = Strings.Error_InvalidNowOffset;
+            return;
+        }
+
+        var now = DateTime.Now;
+        if (ApplyNowOffset(now, amount, unit) is not { } finish)
+        {
+            Message = Strings.Error_InvalidNowOffset;
+            return;
+        }
+
+        StartDate = now.Date;
+        StartTime = now.ToString(TimeFormat, CultureInfo.InvariantCulture);
+        FinishDate = finish.Date;
+        FinishTime = finish.ToString(TimeFormat, CultureInfo.InvariantCulture);
+        Message = "";
+    }
+
+    private void PrepareNewEventForm()
     {
         var now = DateTime.Now;
         isLoadingForm = true;
+        SelectedRow = null;
         StartDate = now.Date;
-        StartTime = now.ToString(TimeFormat, CultureInfo.InvariantCulture);
-        FinishDate = now.Date.AddYears(1);
-        FinishTime = StartTime;
-        DurationSeconds = DefaultDurationSeconds.ToString(CultureInfo.InvariantCulture);
+        StartTime = "";
+        FinishDate = now.Date;
+        FinishTime = "";
+        NowOffsetValue = "0";
+        SelectedNowOffsetUnit = nowOffsetUnits[1];
+        DurationDays = "0";
+        DurationHours = "0";
+        DurationMinutes = "0";
+        DurationSeconds = "0";
+        SelectedPeriod = null;
+        Description = "";
+        Url = "";
         IsEventEnabled = true;
         isLoadingForm = false;
     }
@@ -246,6 +292,42 @@ public sealed partial class EventsViewModel : ObservableObject
         => date is { } day && TimeOnly.TryParse(time, CultureInfo.InvariantCulture, out var clock)
             ? day.Date + clock.ToTimeSpan()
             : null;
+
+    private bool TryReadNowOffset(out int amount, out string unit)
+    {
+        amount = 0;
+        unit = "";
+
+        if (SelectedNowOffsetUnit is null || !nowOffsetUnits.Contains(SelectedNowOffsetUnit))
+            return false;
+        if (!int.TryParse(NowOffsetValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+            return false;
+
+        amount = Math.Clamp(value, 0, MaximumDurationField);
+        unit = SelectedNowOffsetUnit;
+        return true;
+    }
+
+    private static DateTime? ApplyNowOffset(DateTime value, int amount, string unit)
+    {
+        try
+        {
+            return unit switch
+            {
+                "s" => value.AddSeconds(amount),
+                "min" => value.AddMinutes(amount),
+                "h" => value.AddHours(amount),
+                "days" => value.AddDays(amount),
+                "months" => value.AddMonths(amount),
+                "years" => value.AddYears(amount),
+                _ => null,
+            };
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
 
     private static int Number(string text)
         => int.TryParse(text, out var value) ? Math.Clamp(value, 0, MaximumDurationField) : 0;

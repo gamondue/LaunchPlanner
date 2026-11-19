@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LaunchPlanner.Core.ViewModels;assembly=LaunchPlanner.Core"
+             xmlns:res="clr-namespace:LaunchPlanner.Core.Resources;assembly=LaunchPlanner.Core"
+             x:Class="LaunchPlanner.Views.LogPage"
+             x:DataType="vm:LogViewModel"
+             Title="{Binding Log.Status}">
+
+    <Grid RowDefinitions="Auto,*" RowSpacing="8" Padding="16">
+        <FlexLayout Wrap="Wrap" JustifyContent="Start">
+            <Button Text="{x:Static res:Strings.Log_Reload}" Command="{Binding ReloadCommand}" Margin="0,0,8,8" />
+            <Button Text="{x:Static res:Strings.Log_EditFile}" Command="{Binding EditFileCommand}" IsVisible="{Binding CanEditFile}" Margin="0,0,8,8" />
+            <Button Text="{x:Static res:Strings.Log_Exit}" Command="{Binding ExitCommand}" IsVisible="{Binding CanExit}" Margin="0,0,8,8" />
+        </FlexLayout>
+
+        <Editor Grid.Row="1" Text="{Binding Log.Text}" IsReadOnly="True" />
+    </Grid>
+
+</ContentPage>

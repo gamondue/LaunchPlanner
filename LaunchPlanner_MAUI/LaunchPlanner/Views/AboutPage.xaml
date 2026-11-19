@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LaunchPlanner.Core.ViewModels;assembly=LaunchPlanner.Core"
+             xmlns:res="clr-namespace:LaunchPlanner.Core.Resources;assembly=LaunchPlanner.Core"
+             xmlns:models="clr-namespace:LaunchPlanner.Core.Models;assembly=LaunchPlanner.Core"
+             x:Class="LaunchPlanner.Views.AboutPage"
+             x:DataType="vm:AboutViewModel"
+             Title="{x:Static res:Strings.Tab_About}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="8" HorizontalOptions="Center" MaximumWidthRequest="640">
+            <Label Text="{Binding Disclaimer}" HorizontalTextAlignment="Center" />
+            <Image Source="gamon_logo.png" HeightRequest="200" />
+            <Label Text="{Binding Title}" FontSize="28" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding Summary}" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding Version}" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding Author}" FontSize="18" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding City}" FontSize="18" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding Country}" FontSize="18" HorizontalTextAlignment="Center" />
+            <Label Text="{Binding Email}" FontSize="18" FontAttributes="Italic" HorizontalTextAlignment="Center" />
+            <Label Text="{x:Static res:Strings.About_Language}" HorizontalTextAlignment="Center" Margin="0,16,0,0" />
+            <Picker ItemsSource="{Binding Languages}"
+                    SelectedItem="{Binding SelectedLanguage}"
+                    ItemDisplayBinding="{Binding Caption, x:DataType=models:LanguageOption}"
+                    WidthRequest="200"
+                    HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<RootNamespace>LaunchPlanner.Core</RootNamespace>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
+		<!-- Strings.resx è in inglese: è la lingua usata quando manca una traduzione -->
+		<NeutralLanguage>en</NeutralLanguage>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+	</ItemGroup>
+
+	<!-- La classe Strings viene generata a ogni compilazione: basta modificare i file .resx -->
+	<ItemGroup>
+		<EmbeddedResource Update="Resources\Strings.resx">
+			<Generator>MSBuild:Compile</Generator>
+			<StronglyTypedFileName>$(IntermediateOutputPath)Strings.Designer.cs</StronglyTypedFileName>
+			<StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+			<StronglyTypedNamespace>LaunchPlanner.Core.Resources</StronglyTypedNamespace>
+			<StronglyTypedClassName>Strings</StronglyTypedClassName>
+			<PublicClass>true</PublicClass>
+		</EmbeddedResource>
+	</ItemGroup>
+
+</Project>

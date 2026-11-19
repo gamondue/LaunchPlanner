@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="LaunchPlanner.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:views="clr-namespace:LaunchPlanner.Views"
+    xmlns:res="clr-namespace:LaunchPlanner.Core.Resources;assembly=LaunchPlanner.Core"
+    Title="LaunchPlanner">
+
+    <TabBar x:Name="Tabs">
+        <ShellContent
+            Title="{x:Static res:Strings.Tab_Activity}"
+            ContentTemplate="{DataTemplate views:LogPage}"
+            Route="log" />
+        <ShellContent
+            Title="{x:Static res:Strings.Tab_Events}"
+            ContentTemplate="{DataTemplate views:EventsPage}"
+            Route="events" />
+        <ShellContent
+            x:Name="AboutTab"
+            Title="{x:Static res:Strings.Tab_About}"
+            ContentTemplate="{DataTemplate views:AboutPage}"
+            Route="about" />
+    </TabBar>
+
+</Shell>

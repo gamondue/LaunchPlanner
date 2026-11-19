@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="LaunchPlanner_Forms/LaunchPlanner_Forms.csproj" />
+  <Project Path="LaunchPlanner_MAUI/LaunchPlanner.Core/LaunchPlanner.Core.csproj" />
+  <Project Path="LaunchPlanner_MAUI/LaunchPlanner.Tests/LaunchPlanner.Tests.csproj" />
+  <Project Path="LaunchPlanner_MAUI/LaunchPlanner/LaunchPlanner_MAUI.csproj" />
+</Solution>

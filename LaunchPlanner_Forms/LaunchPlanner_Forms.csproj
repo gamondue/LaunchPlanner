@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
     <OutputType>WinExe</OutputType>
     <RootNamespace>gamon.LaunchPlanner</RootNamespace>
     <ApplicationIcon>OrologioFulmine 256 x 256.ico</ApplicationIcon>
@@ -16,11 +16,13 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>0.9.0.0</ApplicationVersion>
+    <ApplicationVersion>1.1.0</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
     <UseWindowsForms>true</UseWindowsForms>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+    <Version>1.1.0</Version>
+    <AssemblyName>LaunchPlanner</AssemblyName>
   </PropertyGroup>
   <ItemGroup>
     <Content Include="OrologioFulmine 256 x 256.ico" />

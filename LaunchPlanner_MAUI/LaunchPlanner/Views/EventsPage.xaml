@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LaunchPlanner.Core.ViewModels;assembly=LaunchPlanner.Core"
+             xmlns:models="clr-namespace:LaunchPlanner.Core.Models;assembly=LaunchPlanner.Core"
+             xmlns:res="clr-namespace:LaunchPlanner.Core.Resources;assembly=LaunchPlanner.Core"
+             x:Class="LaunchPlanner.Views.EventsPage"
+             x:DataType="vm:EventsViewModel"
+             Title="{x:Static res:Strings.Events_Title}">
+
+    <ContentPage.Resources>
+        <Style x:Key="DurationEntry" TargetType="Entry">
+            <Setter Property="Keyboard" Value="Numeric" />
+            <Setter Property="WidthRequest" Value="56" />
+        </Style>
+        <Style x:Key="FieldGroup" TargetType="VerticalStackLayout">
+            <Setter Property="Margin" Value="0,0,16,8" />
+        </Style>
+    </ContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*" RowSpacing="8" Padding="16">
+        <ScrollView MaximumHeightRequest="340">
+            <VerticalStackLayout Spacing="4">
+                <FlexLayout Wrap="Wrap" JustifyContent="Start">
+                    <VerticalStackLayout Style="{StaticResource FieldGroup}">
+                        <Label Text="{x:Static res:Strings.Events_Start}" />
+                        <HorizontalStackLayout Spacing="4">
+                            <DatePicker Date="{Binding StartDate}" />
+                            <Entry Text="{Binding StartTime}" Placeholder="hh:mm:ss" WidthRequest="96" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Style="{StaticResource FieldGroup}">
+                        <Label Text="{x:Static res:Strings.Events_Finish}" />
+                        <HorizontalStackLayout Spacing="4">
+                            <DatePicker Date="{Binding FinishDate}" />
+                            <Entry Text="{Binding FinishTime}" Placeholder="hh:mm:ss" WidthRequest="96" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Style="{StaticResource FieldGroup}">
+                        <Label Text="{x:Static res:Strings.Events_Duration}" />
+                        <HorizontalStackLayout Spacing="4">
+                            <Entry Text="{Binding DurationDays}" Style="{StaticResource DurationEntry}" />
+                            <Entry Text="{Binding DurationHours}" Style="{StaticResource DurationEntry}" />
+                            <Entry Text="{Binding DurationMinutes}" Style="{StaticResource DurationEntry}" />
+                            <Entry Text="{Binding DurationSeconds}" Style="{StaticResource DurationEntry}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Style="{StaticResource FieldGroup}">
+                        <Label Text="{x:Static res:Strings.Events_Period}" />
+                        <Picker ItemsSource="{Binding Periods}"
+                                SelectedItem="{Binding SelectedPeriod}"
+                                ItemDisplayBinding="{Binding Caption, x:DataType=models:PeriodOption}"
+                                WidthRequest="160" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Style="{StaticResource FieldGroup}">
+                        <Label Text="{x:Static res:Strings.Events_Enabled}" />
+                        <CheckBox IsChecked="{Binding IsEventEnabled}" />
+                    </VerticalStackLayout>
+                </FlexLayout>
+
+                <Label Text="{x:Static res:Strings.Events_Description}" />
+                <Entry Text="{Binding Description}" />
+                <Label Text="{x:Static res:Strings.Events_Url}" />
+                <Entry Text="{Binding Url}" />
+
+                <FlexLayout Wrap="Wrap" JustifyContent="Start" Margin="0,8,0,0">
+                    <Button Text="{x:Static res:Strings.Events_Add}" Command="{Binding AddCommand}" Margin="0,0,8,8" />
+                    <Button Text="{x:Static res:Strings.Events_Test}" Command="{Binding TestCommand}" Margin="0,0,8,8" />
+                    <Button Text="{x:Static res:Strings.Events_Delete}" Command="{Binding EraseCommand}" Margin="0,0,8,8" />
+                    <Button Text="{x:Static res:Strings.Events_Save}" Command="{Binding SaveCommand}" Margin="0,0,8,8" />
+                    <Button Text="{x:Static res:Strings.Events_Close}" Command="{Binding CloseCommand}" Margin="0,0,8,8" />
+                </FlexLayout>
+                <Label Text="{Binding Message}" TextColor="{StaticResource Primary}" />
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Rows}"
+                        SelectedItem="{Binding SelectedRow}"
+                        SelectionMode="Single">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="vm:EventRow">
+                    <VerticalStackLayout Padding="8" Spacing="2">
+                        <Label FontAttributes="Bold">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding Description}" />
+                                    <Span Text=" - " />
+                                    <Span Text="{Binding Period}" />
+                                    <Span Text=" - " />
+                                    <Span Text="{x:Static res:Strings.Events_Enabled}" />
+                                    <Span Text=": " />
+                                    <Span Text="{Binding Enabled}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label FontSize="12">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding Start}" />
+                                    <Span Text=" → " />
+                                    <Span Text="{Binding Finish}" />
+                                    <Span Text="  " />
+                                    <Span Text="{x:Static res:Strings.EventRow_Duration}" />
+                                    <Span Text=" " />
+                                    <Span Text="{Binding Duration}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label Text="{Binding Url}" FontSize="12" LineBreakMode="TailTruncation" />
+                    </VerticalStackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
+
+</ContentPage>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Tab_Activity" xml:space="preserve"><value>Attività</value></data>
+  <data name="Tab_Events" xml:space="preserve"><value>Eventi</value></data>
+  <data name="Tab_About" xml:space="preserve"><value>About</value></data>
+
+  <data name="Common_Yes" xml:space="preserve"><value>Sì</value></data>
+  <data name="Common_No" xml:space="preserve"><value>No</value></data>
+
+  <data name="Events_Title" xml:space="preserve"><value>Configurazione eventi</value></data>
+  <data name="Events_Start" xml:space="preserve"><value>Inizio</value></data>
+  <data name="Events_Finish" xml:space="preserve"><value>Fine</value></data>
+  <data name="Events_Duration" xml:space="preserve"><value>Durata (gg, h, min, s)</value></data>
+  <data name="Events_Period" xml:space="preserve"><value>Periodo</value></data>
+  <data name="Events_Enabled" xml:space="preserve"><value>Abilitato</value></data>
+  <data name="Events_Description" xml:space="preserve"><value>Descrizione</value></data>
+  <data name="Events_Url" xml:space="preserve"><value>URL o path e nome file</value></data>
+  <data name="Events_Add" xml:space="preserve"><value>Aggiungi</value></data>
+  <data name="Events_Test" xml:space="preserve"><value>Prova</value></data>
+  <data name="Events_Delete" xml:space="preserve"><value>Elimina</value></data>
+  <data name="Events_Save" xml:space="preserve"><value>Salva modifiche</value></data>
+  <data name="Events_Close" xml:space="preserve"><value>Chiudi</value></data>
+  <data name="EventRow_Duration" xml:space="preserve"><value>durata</value></data>
+
+  <data name="Log_Reload" xml:space="preserve"><value>Aggiornamento da file</value></data>
+  <data name="Log_EditFile" xml:space="preserve"><value>Modifica file</value></data>
+  <data name="Log_Exit" xml:space="preserve"><value>Uscita</value></data>
+
+  <data name="Tray_EditEvents" xml:space="preserve"><value>Modifica eventi</value></data>
+  <data name="Tray_RunEvents" xml:space="preserve"><value>Esecuzione eventi</value></data>
+
+  <data name="About_Summary" xml:space="preserve"><value>Lancia programmi, documenti e pagine web agli orari stabiliti</value></data>
+  <data name="About_Disclaimer" xml:space="preserve"><value>Questo programma è gratuito. L'Autore non fornisce alcuna forma di garanzia, né di funzionalità, né di rispondenza alle esigenze dell'utente.</value></data>
+  <data name="About_Version" xml:space="preserve"><value>Versione {0}</value></data>
+  <data name="About_Country" xml:space="preserve"><value>ITALIA</value></data>
+  <data name="About_Language" xml:space="preserve"><value>Lingua</value></data>
+  <data name="Language_System" xml:space="preserve"><value>Lingua di sistema</value></data>
+
+  <data name="Period_Custom" xml:space="preserve"><value>personalizzato</value></data>
+  <data name="Period_SingleShot" xml:space="preserve"><value>non periodico</value></data>
+  <data name="Period_Second" xml:space="preserve"><value>secondo</value></data>
+  <data name="Period_OneMinute" xml:space="preserve"><value>minuto</value></data>
+  <data name="Period_QuarterOfHour" xml:space="preserve"><value>quarto d'ora</value></data>
+  <data name="Period_HalfHour" xml:space="preserve"><value>mezzora</value></data>
+  <data name="Period_Hour" xml:space="preserve"><value>ora</value></data>
+  <data name="Period_Day" xml:space="preserve"><value>giorno</value></data>
+  <data name="Period_Weekly" xml:space="preserve"><value>settimana</value></data>
+  <data name="Period_Weekday" xml:space="preserve"><value>feriali</value></data>
+  <data name="Period_Weekend" xml:space="preserve"><value>weekend</value></data>
+  <data name="Period_Monday" xml:space="preserve"><value>lunedì</value></data>
+  <data name="Period_Tuesday" xml:space="preserve"><value>martedì</value></data>
+  <data name="Period_Wednesday" xml:space="preserve"><value>mercoledì</value></data>
+  <data name="Period_Thursday" xml:space="preserve"><value>giovedì</value></data>
+  <data name="Period_Friday" xml:space="preserve"><value>venerdì</value></data>
+  <data name="Period_Saturday" xml:space="preserve"><value>sabato</value></data>
+  <data name="Period_Sunday" xml:space="preserve"><value>domenica</value></data>
+  <data name="Period_Month" xml:space="preserve"><value>mese</value></data>
+  <data name="Period_Year" xml:space="preserve"><value>anno</value></data>
+  <data name="Period_NonPeriodical" xml:space="preserve"><value>nessuno</value></data>
+
+  <data name="Schedule_LineError" xml:space="preserve"><value>{0} (riga {1})</value></data>
+  <data name="Schedule_TooFewFields" xml:space="preserve"><value>Numero di campi insufficiente</value></data>
+  <data name="Schedule_InvalidStart" xml:space="preserve"><value>Formato data non valido (inizio): {0}</value></data>
+  <data name="Schedule_InvalidFinish" xml:space="preserve"><value>Formato data non valido (fine): {0}</value></data>
+  <data name="Schedule_InvalidDuration" xml:space="preserve"><value>Formato durata non valido: {0}</value></data>
+  <data name="Schedule_InvalidEnabled" xml:space="preserve"><value>Valore di Abilitato non valido: {0}</value></data>
+
+  <data name="Error_PeriodRequired" xml:space="preserve"><value>Definire la periodicità dell'evento</value></data>
+  <data name="Error_InvalidTime" xml:space="preserve"><value>Orario non valido: usare il formato ore:minuti:secondi</value></data>
+  <data name="Error_UrlRequired" xml:space="preserve"><value>Inserire un URI o percorso file.</value></data>
+  <data name="Error_CannotWriteFile" xml:space="preserve"><value>Non è stato possibile scrivere il file: {0}</value></data>
+  <data name="Error_CannotOpenTarget" xml:space="preserve"><value>Impossibile aprire l'URI/file: {0}</value></data>
+  <data name="Error_CannotOpenSchedule" xml:space="preserve"><value>Impossibile aprire il file {0}: {1}</value></data>
+  <data name="Error_ScheduleUnreadable" xml:space="preserve"><value>Il file {0} non è leggibile: {1}</value></data>
+  <data name="Error_ScheduleNotLoaded" xml:space="preserve"><value>il file {0} non è stato letto</value></data>
+  <data name="Error_FiredUnreadable" xml:space="preserve"><value>Stato dei lanci non leggibile: {0}</value></data>
+  <data name="Error_FiredNotSaved" xml:space="preserve"><value>Stato dei lanci non salvato: {0}</value></data>
+  <data name="Error_MissingUrl" xml:space="preserve"><value>Manca l'URI od il percorso file: {0}</value></data>
+  <data name="Error_UrlNotFound" xml:space="preserve"><value>L'URL indicato non è stato trovato: {0} ({1})</value></data>
+  <data name="Error_EventCheckFailed" xml:space="preserve"><value>Errore nel controllo degli eventi: {0}</value></data>
+  <data name="Error_NoAppCanOpen" xml:space="preserve"><value>Nessuna applicazione può aprire {0}</value></data>
+  <data name="Error_NotificationNotScheduled" xml:space="preserve"><value>Notifica non programmata: {0}</value></data>
+  <data name="Error_NotificationsDenied" xml:space="preserve"><value>Notifiche non autorizzate: gli eventi scattano solo ad app aperta</value></data>
+  <data name="Error_NotificationsDisabled" xml:space="preserve"><value>Le notifiche di LaunchPlanner sono disattivate</value></data>
+
+  <data name="Notification_ChannelName" xml:space="preserve"><value>Eventi programmati</value></data>
+</root>

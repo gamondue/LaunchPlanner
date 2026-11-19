@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Text;
 using System.IO;
 using System.Windows.Forms;
+using System.Globalization;
 
 namespace gamon.LaunchPlanner
 {
@@ -11,13 +12,13 @@ namespace gamon.LaunchPlanner
     {
 #if DEBUG
         //string nomeFileDati = "prova.txt";
-        string nomeFileDati = "LaunchPlanner schedule.txt";
-        string pathDati = ".\\";
+        string nomeFileDati = "LaunchPlanner schedule_DEBUG.txt";
 #else
         string nomeFileDati = "LaunchPlanner schedule.txt";
-        string pathDati =Application.LocalUserAppDataPath.Substring(
-            0, Application.LocalUserAppDataPath.LastIndexOf("\\")+1); // toglie la versione dalla path
 #endif
+        // Percorso della cartella Documenti\LaunchPlanner dell'utente (inserito nel ctor)
+        string pathEFileDati;
+
         // ELENCO delle Periodicità implementate attualmente:
         // N.B. NEL CAMPO "Periodo" DEL FILE SI DEVONO USARE LE PRIME QUATTRO LETTERE, non importa se maiuscole o minuscole.
         // Oltre le prime quattro lettere il programma non controlla, per cui si può scrivere quello che si vuole. 
@@ -75,6 +76,20 @@ namespace gamon.LaunchPlanner
         public frmBackground()
         {
             InitializeComponent();
+
+            // Imposta la cartella Documenti\<utente>\LaunchPlanner e la crea se non esiste.
+            string documents = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string launchDir = Path.Combine(documents, "LaunchPlanner");
+            try
+            {
+                Directory.CreateDirectory(launchDir);
+            }
+            catch
+            {
+                // Se la creazione fallisce, fallback alla cartella corrente per non bloccare l'app.
+                launchDir = ".";
+            }
+            pathEFileDati = Path.Combine(launchDir, nomeFileDati);
         }
 
         private void notifyIcon1_DoubleClick(object sender, EventArgs e)
@@ -130,17 +145,14 @@ namespace gamon.LaunchPlanner
                 endSessionPending = true;
             base.WndProc(ref m);
         }
-
         private void uscitaToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
-
         private void uscitaToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             Application.Exit();
         }
-
         private void timer1_Tick(object sender, EventArgs e)
         {
             //DateTime StartFire;
@@ -154,7 +166,7 @@ namespace gamon.LaunchPlanner
 
             for (int i = 0; i < eventi.Count; i++)
             {
-                Event ev = (Event)eventi[i]; 
+                Event ev = (Event)eventi[i];
 
                 if (ev.Enabled)
                 {
@@ -163,16 +175,15 @@ namespace gamon.LaunchPlanner
                     {
                         DateTime nextE = NextEventTime(ev);
                         if (nextE == DateTime.MaxValue)
-                            break; 
+                            continue;
                         if (Now >= nextE && Now <= nextE + ev.Duration && !ev.AlreadyFired)
                             accendiURL(ev);
                         if (Now > nextE + ev.Duration)
-                            ev.AlreadyFired = false; 
+                            ev.AlreadyFired = false;
                     }
                 }
             }
         }
-
         private DateTime NextEventTime(Event Event)
         {
             DateTime nextEvent = DateTime.MaxValue;
@@ -183,8 +194,9 @@ namespace gamon.LaunchPlanner
             switch (Event.PeriodType)
             {
                 case Event.Periodicity.SingleShot:
+                case Event.Periodicity.NonPeriodical:
                     {
-                        nextEvent = Event.StartAll; 
+                        nextEvent = Event.StartAll;
                         break;
                     }
                 case Event.Periodicity.OneMinute:
@@ -195,59 +207,11 @@ namespace gamon.LaunchPlanner
                         break;
                     }
                 case Event.Periodicity.QuarterOfHour:
-                    // quartodora
-                    nextEvent = Now; 
-                    if (Now.Minute < Event.StartAll.Minute)
-                    {
-                        nextEvent = new DateTime(Now.Year, Now.Month, Now.Day, Now.Hour,
-                        Event.StartAll.Minute, Event.StartAll.Second);
-                    }
-                    else
-                    {
-                        if (Now.Minute >= Event.StartAll.Minute)
-                        {
-                            if (Now.Minute < Event.StartAll.Minute + 15)
-                            {
-                                nextEvent = DateTime.Now.Add(new TimeSpan(0, Event.StartAll.Minute + 15, Event.StartAll.Second));
-                            }
-                            else
-                            {
-                                if (Now.Minute < Event.StartAll.Minute + 30)
-                                {
-                                    nextEvent = new DateTime(Now.Year, Now.Month, Now.Day, Now.Hour,
-                                                    Event.StartAll.Minute + 30, Event.StartAll.Second);
-                                }
-                                else
-                                {
-                                    if (Now.Minute < Event.StartAll.Minute + 45)
-                                    {
-                                        nextEvent = new DateTime(Now.Year, Now.Month, Now.Day, Now.Hour,
-                                                        Event.StartAll.Minute + 45, Event.StartAll.Second);
-                                    }
-                                    else
-                                    {
-                                        nextEvent = new DateTime(Now.Year, Now.Month, Now.Day, Now.Hour + 1,
-                                                    Event.StartAll.Minute, Event.StartAll.Second);
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    nextEvent = latestOccurrence(Event, new TimeSpan(0, 15, 0), Now);
                     break;
 
                 case Event.Periodicity.HalfHour:
-                    // mezzora
-                    nextEvent = Now;
-                    if (Now.Minute >= Event.StartAll.Minute + 30)
-                    {
-                        nextEvent = new DateTime(Now.Year, Now.Month, Now.Day, Now.Hour + 1,
-                        Event.StartAll.Minute, Event.StartAll.Second);
-                    }
-                    else
-                    {
-                        nextEvent = new DateTime(Now.Year, Now.Month, Now.Day, Now.Hour,
-                        Event.StartAll.Minute + 30, Event.StartAll.Second);
-                    }
+                    nextEvent = latestOccurrence(Event, new TimeSpan(0, 30, 0), Now);
                     break;
 
                 case Event.Periodicity.Hour:
@@ -270,14 +234,13 @@ namespace gamon.LaunchPlanner
                     }
 
                 case Event.Periodicity.Weekly:
-                    nextEvent = new DateTime(Now.Year, Now.Month, Event.StartAll.Day + 7, Event.StartAll.Hour,
-                                                Event.StartAll.Minute, Event.StartAll.Second);
+                    nextEvent = latestOccurrence(Event, new TimeSpan(7, 0, 0, 0), Now);
                     break;
 
                 case Event.Periodicity.Weekend:
                     nextEvent = new DateTime(Now.Year, Now.Month, Now.Day, Event.StartAll.Hour,
                                                 Event.StartAll.Minute, Event.StartAll.Second);
-                    if (nextEvent.DayOfWeek != DayOfWeek.Saturday && nextEvent .DayOfWeek != DayOfWeek.Sunday)
+                    if (nextEvent.DayOfWeek != DayOfWeek.Saturday && nextEvent.DayOfWeek != DayOfWeek.Sunday)
                     {
                         nextEvent = DateTime.MaxValue;
                     }
@@ -289,7 +252,7 @@ namespace gamon.LaunchPlanner
 
                 case Event.Periodicity.Tuesday:
                     nextEvent = nextTimeSameWeekDay(DayOfWeek.Tuesday, Now, Event);
-                    break; 
+                    break;
 
                 case Event.Periodicity.Wednesday:
                     nextEvent = nextTimeSameWeekDay(DayOfWeek.Wednesday, Now, Event);
@@ -312,17 +275,16 @@ namespace gamon.LaunchPlanner
                     break;
 
                 case Event.Periodicity.Month:
-                    nextEvent = new DateTime(Now.Year, Now.Month, Event.StartAll.Day, Event.StartAll.Hour,
-                                                Event.StartAll.Minute, Event.StartAll.Second);
+                    nextEvent = sameDayOfMonth(Event, Now);
                     break;
 
                 case Event.Periodicity.Year:
-
+                    nextEvent = Event.StartAll.AddYears(Now.Year - Event.StartAll.Year);
+                    break;
 
                 case Event.Periodicity.Custom:
-                    // prova a leggerlo come una data, per assegnarlo come periodo "custom", se non ce la fa si lamenta
-                    // the custom period is read from the Duration data 
-                    if(Event.Duration <= new TimeSpan(0,0,1))
+                    // the custom period is read from the Duration data
+                    if (Event.Duration <= new TimeSpan(0, 0, 1))
                         nextEvent = new DateTime(Now.Year, Now.Month, Now.Day, Now.Hour,
                                 Now.Minute, Event.StartAll.Second);
                     else if (Event.Duration <= new TimeSpan(0, 1, 0))
@@ -331,21 +293,28 @@ namespace gamon.LaunchPlanner
                     else if (Event.Duration <= new TimeSpan(1, 0, 0))
                         nextEvent = new DateTime(Now.Year, Now.Month, Now.Day, Event.StartAll.Hour,
                                 Event.StartAll.Minute, Event.StartAll.Second);
-                    else if (Event.Duration <= new TimeSpan(1,0,0,0))
-                        nextEvent = new DateTime(Now.Year, Now.Month, Event.StartAll.Day, Event.StartAll.Hour,
-                                Event.StartAll.Minute, Event.StartAll.Second);
                     else if (Event.Duration <= new TimeSpan(1, 0, 0, 0))
-                        nextEvent = new DateTime(Now.Year, Now.Month, Event.StartAll.Day, Event.StartAll.Hour,
-                                Event.StartAll.Minute, Event.StartAll.Second);
+                        nextEvent = sameDayOfMonth(Event, Now);
                     break;
 
                 default:
                     nextEvent = DateTime.MaxValue;
-                    break; 
-                }
-                return nextEvent; 
+                    break;
             }
-
+            return nextEvent;
+        }
+        // ultima occorrenza non successiva a Now di un evento con periodo fisso, allineata a StartAll
+        private static DateTime latestOccurrence(Event Event, TimeSpan Period, DateTime Now)
+        {
+            long elapsedPeriods = (Now - Event.StartAll).Ticks / Period.Ticks;
+            return Event.StartAll.AddTicks(elapsedPeriods * Period.Ticks);
+        }
+        // occorrenza del mese corrente: AddMonths porta all'ultimo giorno i mesi troppo corti
+        private static DateTime sameDayOfMonth(Event Event, DateTime Now)
+        {
+            int months = (Now.Year - Event.StartAll.Year) * 12 + Now.Month - Event.StartAll.Month;
+            return Event.StartAll.AddMonths(months);
+        }
         //private void accendiURL(DateTime ProssimoFire, DateTime Adesso, ref Event e)
         private void accendiURL(Event e)
         {
@@ -361,85 +330,55 @@ namespace gamon.LaunchPlanner
             //    FineFirePrecedente = FirePrecedente.Add(e.ActivationLenght);
             //}
             //else
-            //{
-            //    // in questo caso i periodi non sono costanti, per individuare il FirePrecedente bisogna 
-            //    // andare indietro con il calendario
-            //    FineFire = ProssimoFire.Add(e.ActivationLenght);
-            //    string controllo = e.PeriodType.ToLower();
-            //    if (controllo.Length > 3) controllo = controllo.Substring(0, 4);
-            //    switch (controllo) {
-            //        case "mese":
-            //            // mese
-            //            FirePrecedente = ProssimoFire.AddMonths(-1);
-            //            FineFirePrecedente = FirePrecedente.Add(e.ActivationLenght);
-            //            break;
+            //{ 
+            // fire the event
+            try
+            {
+                e.AlreadyFired = true;
+                string target = e.URL ?.Trim();
+                if (string.IsNullOrEmpty(target))
+                {
+                    MessageBox.Show("Manca l'URI od il percorso file ");
+                    return;
+                }
 
-            //        case "anno":
-            //            // anno
-            //            FirePrecedente = ProssimoFire.AddYears(-1);
-            //            FineFirePrecedente = FirePrecedente.Add(e.ActivationLenght);
-            //            break;
+                // Se è un URI file://, ottieni il percorso locale
+                if (Uri.TryCreate(target, UriKind.Absolute, out Uri uri) && uri.Scheme == Uri.UriSchemeFile)
+                {
+                    target = uri.LocalPath;
+                }
 
-            //        default:
-            //            // parse della stringa che definisce il periodo
-            //            string[] temp = e.PeriodType.Split(' ');
-            //            string[] day = temp[0].Split('-');
-            //            string[] hour = temp[1].Split(':');
-
-            //            // si torna indietro da ProssimoFire degli anni specificati nella definizione del periodo
-            //            FirePrecedente = ProssimoFire.AddYears(-Convert.ToInt32(day[0]));
-            //            // si torna indietro dei mesi
-            //            FirePrecedente = FirePrecedente.AddMonths(-Convert.ToInt32(day[1]));
-            //            TimeSpan restoTempo = new TimeSpan(Convert.ToInt32(day[2]), Convert.ToInt32(hour[0]),
-            //                                                Convert.ToInt32(hour[1]), Convert.ToInt32(hour[2]));
-            //            FirePrecedente = FirePrecedente.Subtract(restoTempo);
-
-            //            FineFirePrecedente = FirePrecedente.Add(e.ActivationLenght);
-            //            break;
-            //    }
-                
-            //}
-
-            //if ((Adesso >= FineFirePrecedente & Adesso < ProssimoFire) | Adesso > FineFire)
-            //{
-            //    // se ho superato il tempo di attivazione dell'evento "passato", e non 
-            //    // ho ancora passato il tempo per il prossimo evento, faccio in modo che esso
-            //    // possa essere "risparato" in seguito
-            //    e.GiàAcceso = false;
-            //}
-            //else
-            //{
-            //    if (Adesso > FirePrecedente & Adesso < FineFire & !e.GiàAcceso)
-            //    {
-                    // fire the event
-                    try
-                    {
-                        e.AlreadyFired = true;
-                        System.Diagnostics.Process.Start(e.URL);
-                        this.Text = "LaunchPlanner (" + e.Description + ")";
-                        notifyIcon1.Text = this.Text;
-                        txtLog.Text += DateTime.Now + " " + e.Description + "\r\n";
-                    }
-                    catch
-                    {
-                        MessageBox.Show("L'URL indicato (" + e.URL + ") non è stato trovato");
-                    }
+                // lancia l'URL o il file con l'applicazione associata
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = target,
+                    UseShellExecute = true, // fondamentale per aprire con l'app associata
+                };
+                System.Diagnostics.Process.Start(psi);
+                this.Text = "LaunchPlanner (" + e.Description + ")";
+                // NotifyIcon.Text non accetta testi oltre i 127 caratteri
+                notifyIcon1.Text = this.Text.Length > 127 ? this.Text.Substring(0, 127) : this.Text;
+                txtLog.Text += DateTime.Now + " " + e.Description + "\r\n";
+            }
+            catch
+            {
+                MessageBox.Show("L'URL indicato non è stato trovato\n" + e.URL);
+            }
         }
-
         private DateTime nextTimeSameWeekDay(DayOfWeek Day, DateTime Now, Event Event)
         {
             DateTime nextEventInstant = new DateTime(Now.Year, Now.Month, Now.Day, Event.StartAll.Hour,
                                         Event.StartAll.Minute, Event.StartAll.Second);
-            while (nextEventInstant.DayOfWeek != Day) {
+            while (nextEventInstant.DayOfWeek != Day)
+            {
                 nextEventInstant = nextEventInstant.AddDays(1);
             }
-            return nextEventInstant; 
+            return nextEventInstant;
         }
-
         private void readFile(String nFile)
         {
             char tab = '\t';
-            int nLine=0;
+            int nLine = 0;
 
             try
             {
@@ -447,17 +386,17 @@ namespace gamon.LaunchPlanner
                 // prova ad aprire il file
                 Encoding fileEncoding = Encoding.UTF8;
 
-                FileStream fsIn = new FileStream(nFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using FileStream fsIn = new FileStream(nFile, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-                StreamReader sr = new StreamReader(fsIn, fileEncoding, true);
+                using StreamReader sr = new StreamReader(fsIn, fileEncoding, true);
 
                 // header: thrown 
-                String Line = sr.ReadLine();    
+                String Line = sr.ReadLine();
 
                 int i = 0;
                 nLine = 2;
                 // read the file's rows 
-                for (Line = sr.ReadLine(); Line != null; Line = sr.ReadLine()) 
+                for (Line = sr.ReadLine(); Line != null; Line = sr.ReadLine())
                 //TODO block syntax errors (albeit not existing, if you just use the GUI configurator)
                 {
                     if (!(Line.StartsWith("'"))) // ' stands for a comment
@@ -465,28 +404,90 @@ namespace gamon.LaunchPlanner
                         string[] Campi = Line.Split(tab);  // generate fields 
 
                         Event ev = new Event();
-                        ev.StartAll = Convert.ToDateTime(Campi[0]);
-                        ev.FinishAll = Convert.ToDateTime(Campi[1]);
+
+                        // Parsing robusto di StartAll e FinishAll usando formati italiani e accettando sia ':' sia '.' come separatori orari.
+                        string rawStart = Campi[0].Trim();
+                        string rawFinish = Campi[1].Trim();
+
+                        string[] acceptedFormats = new[]
+                        {
+                            "dd/MM/yyyy HH.mm.ss",
+                            "d/M/yyyy H.m.s",
+                            "dd/MM/yyyy H.mm.ss",
+                            "dd/MM/yyyy HH:mm:ss",
+                            "d/M/yyyy H:m:s",
+                            "dd/MM/yyyy H:m:s",
+                            "dd/MM/yyyy",
+                            "yyyy-MM-dd HH:mm:ss",
+                            "yyyy-MM-ddTHH:mm:ss"
+                        };
+
+                        DateTime parsedDate;
+                        CultureInfo it = CultureInfo.GetCultureInfo("it-IT");
+
+                        bool okStart = DateTime.TryParseExact(rawStart, acceptedFormats, it, DateTimeStyles.AllowWhiteSpaces, out parsedDate);
+                        if (!okStart)
+                        {
+                            // prova a sostituire i punti con i due punti nella parte oraria e riprovare
+                            string altStart = rawStart.Replace('.', ':');
+                            okStart = DateTime.TryParseExact(altStart, acceptedFormats, it, DateTimeStyles.AllowWhiteSpaces, out parsedDate);
+                            if (!okStart)
+                            {
+                                // fallback generico nella cultura italiana
+                                okStart = DateTime.TryParse(rawStart, it, DateTimeStyles.AllowWhiteSpaces, out parsedDate);
+                            }
+                        }
+
+                        if (!okStart)
+                        {
+                            MessageBox.Show("Formato data non valido (inizio): " + rawStart + " (riga " + nLine + ")",
+                                "Errore nel formato della data", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            nLine++;
+                            continue; // salta questa riga
+                        }
+                        ev.StartAll = parsedDate;
+
+                        bool okFinish = DateTime.TryParseExact(rawFinish, acceptedFormats, it, DateTimeStyles.AllowWhiteSpaces, out parsedDate);
+                        if (!okFinish)
+                        {
+                            string altFinish = rawFinish.Replace('.', ':');
+                            okFinish = DateTime.TryParseExact(altFinish, acceptedFormats, it, DateTimeStyles.AllowWhiteSpaces, out parsedDate);
+                            if (!okFinish)
+                            {
+                                okFinish = DateTime.TryParse(rawFinish, it, DateTimeStyles.AllowWhiteSpaces, out parsedDate);
+                            }
+                        }
+
+                        if (!okFinish)
+                        {
+                            MessageBox.Show("Formato data non valido (fine): " + rawFinish + " (riga " + nLine + ")",
+                                "Errore nel formato della data", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                            nLine++;
+                            continue; // salta questa riga
+                        }
+                        ev.FinishAll = parsedDate;
 
                         string[] temp = Campi[2].Split(':');
-                        if (temp[0].Contains(".")) {
-                            // c'è il numero di giorni
-                            int giorni = int.Parse (temp[0].Substring(0,temp[0].IndexOf(".")));
-                            int ore = int.Parse(temp[0].Substring(temp[0].IndexOf(".")+1));
-                            ev.Duration = new TimeSpan(giorni, ore, Convert.ToInt32(temp[1]), 
-                                Convert.ToInt32(temp[2]));
-                        } else 
+                        if (temp[0].Contains("."))
                         {
-                            ev.Duration = new TimeSpan(Convert.ToInt32(temp[0]), Convert.ToInt32(temp[1]), 
+                            // c'è il numero di giorni
+                            int giorni = int.Parse(temp[0].Substring(0, temp[0].IndexOf(".")));
+                            int ore = int.Parse(temp[0].Substring(temp[0].IndexOf(".") + 1));
+                            ev.Duration = new TimeSpan(giorni, ore, Convert.ToInt32(temp[1]),
+                                Convert.ToInt32(temp[2]));
+                        }
+                        else
+                        {
+                            ev.Duration = new TimeSpan(Convert.ToInt32(temp[0]), Convert.ToInt32(temp[1]),
                                 Convert.ToInt32(temp[2]));
                         }
                         ev.PeriodType = getTypeOfPeriodFromString(Campi[3]);
                         ev.Description = Campi[4];
                         ev.URL = Campi[5];
-                        if (ev.URL.IndexOf("http",0)>0)
+                        if (ev.URL.IndexOf("http", 0) > 0)
                             ev.URL = ev.URL.Replace("./", Application.StartupPath + "/").Replace("\\", "/");
                         ev.AlreadyFired = false;
-                        ev.Enabled = Convert.ToBoolean (Campi[6]);
+                        ev.Enabled = Convert.ToBoolean(Campi[6]);
 
                         eventi.Add(ev);
 
@@ -507,25 +508,34 @@ namespace gamon.LaunchPlanner
                     // provo di nuovo ad aprirlo, questa volta per modificarlo
                     try
                     {
-                        System.Diagnostics.Process.Start("file://" + nFile);
+                        openWithAssociatedApp(nFile);
                     }
                     catch
                     {
                         //MessageBox.Show("Il file di configurazione non esiste: copia del file standard nella cartella dell'utente");
-                        //System.IO.File.Copy(Application.StartupPath + nomeFileDati, pathDati + nomeFileDati);
+                        //System.IO.File.Copy(Application.StartupPath + nomeFileDati, pathEFileDati + nomeFileDati);
                         //MessageBox.Show("Modifica del nuovo file di configurazione dell'utente"); 
-                        //System.Diagnostics.Process.Start("file://" + pathDati + nomeFileDati); 
+                        //System.Diagnostics.Process.Start("file://" + pathEFileDati + nomeFileDati); 
                     }
                 }
             }
         }
-
         internal Event.Periodicity getTypeOfPeriodFromString(string stPeriodo)
         {
-            string controllo = stPeriodo.ToLower();
-            controllo = controllo.Substring(0, 5);
+            // Gestione robusta: evita eccezioni se la stringa è nulla o più corta di 5 caratteri
+            if (string.IsNullOrWhiteSpace(stPeriodo))
+                return Event.Periodicity.NonPeriodical;
+
+            string controllo = stPeriodo.Trim().ToLowerInvariant();
+
+            // Non chiamare Substring(0,5) se la stringa è più corta di 5 caratteri
+            if (controllo.Length > 5)
+                controllo = controllo.Substring(0, 5);
+
             switch (controllo)
             {
+                case "singl":
+                    return Event.Periodicity.SingleShot;
                 case "nessu":
                 case "none":
                 case "nonpe":
@@ -585,12 +595,11 @@ namespace gamon.LaunchPlanner
                     return Event.Periodicity.Year;
                 case "custo":
                 case "perso":
-                    return Event.Periodicity.Custom; 
+                    return Event.Periodicity.Custom;
                 default:
                     return Event.Periodicity.NonPeriodical;
             }
         }
-
         private TimeSpan period(string stPeriodo)
         {
             string controllo = stPeriodo.ToLower();
@@ -622,25 +631,25 @@ namespace gamon.LaunchPlanner
                     return new TimeSpan(1, 0, 0);
 
                 case "gior":
-                    // giorno
+                // giorno
                 case "feri":
-                    // feriali
+                // feriali
                 case "week":
-                    // weekend 
+                // weekend 
                 case "fine":
-                    // finesettimana
+                // finesettimana
                 case "lune":
-                    // lunedì
+                // lunedì
                 case "mart":
-                    // martedì 
+                // martedì 
                 case "merc":
-                    // mercoledì
+                // mercoledì
                 case "giov":
-                    //giovedi
+                //giovedi
                 case "vene":
-                    //venerdi
+                //venerdi
                 case "saba":
-                    // sabato
+                // sabato
                 case "dome":
                     // domenica
 
@@ -655,13 +664,13 @@ namespace gamon.LaunchPlanner
                     // mese
                     // il periodo non è fisso perchè dipende dalla lunghezza del mese,
                     // QUESTO CALCOLO è SOLO APPROSSIMATIVO (considera ogni mese di 30 giorni)
-                    return new TimeSpan(24 * 30, 0, 0); 
+                    return new TimeSpan(24 * 30, 0, 0);
 
                 case "anno":
                     // anno
                     // il periodo non è fisso perchè dipende dalla lunghezza dell'anno,
                     // QUESTO CALCOLO è SOLO APPROSSIMATIVO (considera un anno di 365 giorni)
-                    return new TimeSpan(24 * 365, 0, 0); 
+                    return new TimeSpan(24 * 365, 0, 0);
 
                 default:
                     // prova a leggerlo come una data, per assegnarlo come stPeriodo "custom", se non ce la fa si lamenta
@@ -676,48 +685,58 @@ namespace gamon.LaunchPlanner
                         // il periodo non è fisso perchè dipende dalla lunghezza dell'anno,
                         // QUESTO CALCOLO è SOLO APPROSSIMATIVO (considera un anno di 365 giorni)
                         return new TimeSpan(24 * 365 * Convert.ToInt32(day[0]) + 24 * 30 * Convert.ToInt32(day[1])
-                                            + 24 * Convert.ToInt32(day[2]) + Convert.ToInt32(hour[0]), 
+                                            + 24 * Convert.ToInt32(day[2]) + Convert.ToInt32(hour[0]),
                                             Convert.ToInt32(hour[1]), Convert.ToInt32(hour[2]));
-                }
-                catch
-                {
-                    MessageBox.Show("Errore nella definizione del periodo dell'evento");
-                    return new TimeSpan();
-                }
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Errore nella definizione del periodo dell'evento");
+                        return new TimeSpan();
+                    }
             }
         }
-
         private void letturaFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             eventi.Clear();
-            readFile(pathDati + nomeFileDati);
+            readFile(pathEFileDati);
         }
-
         private void modificaFileToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            //System.Diagnostics.Process.Start("file://" + pathDati + nomeFileDati);
-            System.Diagnostics.Process.Start(pathDati + nomeFileDati);
+            try
+            {
+                openWithAssociatedApp(pathEFileDati);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Impossibile aprire il file " + pathEFileDati + "\n" + ex.Message);
+            }
         }
-
+        private static void openWithAssociatedApp(string nFile)
+        {
+            // Senza UseShellExecute .NET non apre i documenti con l'applicazione associata
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = nFile,
+                UseShellExecute = true,
+            };
+            System.Diagnostics.Process.Start(psi);
+        }
         private void frmLaunchPlanner_Load(object sender, EventArgs e)
         {
             MinimizeInTray();
-            readFile(pathDati + nomeFileDati);
+            readFile(pathEFileDati);
         }
-
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             gamon.frmAbout f = new gamon.frmAbout();
             f.Show();
         }
-
         private void toolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            gamon.LaunchPlanner.frmConfiguration frmConf = 
+            gamon.LaunchPlanner.frmConfiguration frmConf =
                 new gamon.LaunchPlanner.frmConfiguration(eventi, this);
             frmConf.Show();
         }
-
         public void ScriviFile(string nFile)
         {
             try
@@ -726,16 +745,16 @@ namespace gamon.LaunchPlanner
 
                 // prova ad aprire il file
                 Encoding fileEncoding = Encoding.UTF8;
-                FileStream fsOut = new FileStream(nFile, FileMode.Create , FileAccess.Write);
-                StreamWriter sw = new StreamWriter(fsOut, fileEncoding);
+                using FileStream fsOut = new FileStream(nFile, FileMode.Create, FileAccess.Write);
+                using StreamWriter sw = new StreamWriter(fsOut, fileEncoding);
 
                 // prima riga di intestazione:
                 string Line = "Istante Inizio\tIstante Fine\tDurata\tPeriodicità\tDescrizione\tURL\tAbilitato";
-                sw.WriteLine(Line); 
+                sw.WriteLine(Line);
 
                 for (int i = 0; i < eventi.Count; i++)
                 {
-                    Event ev = (Event) eventi[i];
+                    Event ev = (Event)eventi[i];
                     Line = ev.StartAll + "\t" + ev.FinishAll + "\t" + ev.Duration + "\t" +
                             Enum.GetName(typeof(Event.Periodicity), ev.PeriodType) + "\t" + ev.Description + "\t" + ev.URL + "\t" +
                             ev.Enabled;
@@ -745,19 +764,17 @@ namespace gamon.LaunchPlanner
                 sw.Close();
             }
             catch (Exception ex)
-            {	
+            {
                 // se non si riesce a scrivere il file, avverte
                 MessageBox.Show("Non è stato possibile scrivere il file " + nFile,
                     "Errore nella scrittura.\r\n" + ex.Message,
                     MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
         }
-
         public void Salva()
         {
-            ScriviFile(pathDati + nomeFileDati);
+            ScriviFile(pathEFileDati);
         }
-
         private void aboutToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             gamon.frmAbout f = new gamon.frmAbout();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TextBox;
 
 namespace gamon.LaunchPlanner
 {
@@ -34,6 +35,8 @@ namespace gamon.LaunchPlanner
             // durata, se la durata è superiore al minuto)
             et = new EventType(Event.Periodicity.OneMinute, "minuto");
             cmbPeriods.Items.Add(et);
+            et = new EventType(Event.Periodicity.QuarterOfHour, "quartodora");
+            cmbPeriods.Items.Add(et);
             et = new EventType(Event.Periodicity.HalfHour, "mezzora");
             cmbPeriods.Items.Add(et);
             // ora      evento sparato ad ogni ora, 
@@ -44,6 +47,9 @@ namespace gamon.LaunchPlanner
             // indicato dall'istante di inizio dell'evento
             et = new EventType(Event.Periodicity.Day, "giorno");
             cmbPeriods.Items.Add(et);
+            // settimana    evento sparato ogni 7 giorni dall'istante di inizio
+            et = new EventType(Event.Periodicity.Weekly, "settimana");
+            cmbPeriods.Items.Add(et);
             // feriali  evento sparato da Lunedì a Venerdì, all'ora, minuto 
             // e secondo indicato dall'istante di inizio dell'evento
             et = new EventType(Event.Periodicity.Weekday, "feriali");
@@ -51,7 +57,14 @@ namespace gamon.LaunchPlanner
             // weekend o finesettimana  Sabato e Domenica, all'istante di inizio
             et = new EventType(Event.Periodicity.Weekend, "weekend");
             cmbPeriods.Items.Add(et);
+            cmbPeriods.Items.Add(et);
             // lunedì   evento sparato il Lunedì, all'istante di inizio
+            et = new EventType(Event.Periodicity.Monday, "lunedì");
+            cmbPeriods.Items.Add(et);
+            et = new EventType(Event.Periodicity.Tuesday, "martedì");
+            cmbPeriods.Items.Add(et);
+            et = new EventType(Event.Periodicity.Wednesday, "mercoledì");
+            cmbPeriods.Items.Add(et);
             et = new EventType(Event.Periodicity.Thursday, "giovedì");
             cmbPeriods.Items.Add(et);
             et = new EventType(Event.Periodicity.Friday, "venerdì");
@@ -194,8 +207,8 @@ namespace gamon.LaunchPlanner
         {
             if (currentEvent != null)
             {
-                currentEvent.PeriodType = frmBackground.getTypeOfPeriodFromString(cmbPeriods.SelectedItem.ToString());
-                switch (cmbPeriods.SelectedItem)
+                currentEvent.PeriodType = ((EventType)cmbPeriods.SelectedItem).periodicity;
+                switch (cmbPeriods.SelectedItem.ToString())
                 {
                     case "custom":
                     case "personalizzato": // ?????
@@ -467,6 +480,7 @@ namespace gamon.LaunchPlanner
         private void btnErase_Click(object sender, EventArgs e)
         {
             listEvents.Remove(currentEvent);
+            currentEvent = null;
             fillDatagrid(); 
         }
 
@@ -474,21 +488,22 @@ namespace gamon.LaunchPlanner
         {
             Event eventoNuovo = new Event(); 
             eventoNuovo.Enabled = chkEnabled.Checked;
-            try
+            if (!(cmbPeriods.SelectedItem is EventType tipo))
             {
-                eventoNuovo.PeriodType = frmBackground.getTypeOfPeriodFromString(cmbPeriods.SelectedItem.ToString());
-            } catch {
                 MessageBox.Show("Definire la periodicità dell'evento");
                 return;
             }
+            eventoNuovo.PeriodType = tipo.periodicity;
             eventoNuovo.URL = txtURI.Text;
             eventoNuovo.Description = txtDescription.Text;
             eventoNuovo.StartAll = dtpkStart.Value;
             eventoNuovo.FinishAll = dtpkEnd.Value;
             
-            int ore = int.Parse(txtDaysDuration.Text) * 24 + int.Parse(txtHoursDuration.Text);
-            int minuti = int.Parse(txtMinutesDuration.Text);
-            int secondi = int.Parse(txtSecondsDuration.Text);
+            int.TryParse(txtDaysDuration.Text, out int giorni);
+            int.TryParse(txtHoursDuration.Text, out int ore);
+            ore += giorni * 24;
+            int.TryParse(txtMinutesDuration.Text, out int minuti);
+            int.TryParse(txtSecondsDuration.Text, out int secondi);
             TimeSpan dummy = new TimeSpan(ore, minuti, secondi);
             eventoNuovo.Duration = dummy;
             listEvents.Add(eventoNuovo);
@@ -499,14 +514,32 @@ namespace gamon.LaunchPlanner
 
         private void btnTest_Click(object sender, EventArgs e)
         {
-            // spara l'evento
             try
             {
-                System.Diagnostics.Process.Start(txtURI.Text);
+                string target = txtURI.Text?.Trim();
+                if (string.IsNullOrEmpty(target))
+                {
+                    MessageBox.Show("Inserire un URI o percorso file.");
+                    return;
+                }
+
+                // Se è un URI file://, ottieni il percorso locale
+                if (Uri.TryCreate(target, UriKind.Absolute, out Uri uri) && uri.Scheme == Uri.UriSchemeFile)
+                {
+                    target = uri.LocalPath;
+                }
+
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = target,
+                    UseShellExecute = true, // fondamentale per aprire con l'app associata
+                };
+
+                System.Diagnostics.Process.Start(psi);
             }
-            catch
+            catch (Exception ex)
             {
-                MessageBox.Show("L'URI indicato non è stato trovato\n(" + txtURI.Text + ") ");
+                MessageBox.Show("Impossibile aprire l'URI/file:\n" + ex.Message, "Errore", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -517,7 +550,7 @@ namespace gamon.LaunchPlanner
 
         private void dgrdEvents_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            if (e.RowIndex > -1)
+            if (e.RowIndex > -1 && e.RowIndex < listEvents.Count)
             {
                 currentEvent = (Event)listEvents[e.RowIndex];
                 currentEventListIndex = e.RowIndex;

@@ -1,23 +1,9 @@
-using LaunchPlanner.Core.Models;
 using LaunchPlanner.Core.Resources;
-using LaunchPlanner.Core.Services;
 
 namespace LaunchPlanner.Core.ViewModels;
 
-public sealed class AboutViewModel(string version, LanguageService language)
+public sealed class AboutViewModel(string version)
 {
-    public IReadOnlyList<LanguageOption> Languages => language.Options;
-
-    public LanguageOption? SelectedLanguage
-    {
-        get => Languages.First(option => option.Code == language.Current);
-        set
-        {
-            if (value is not null)
-                language.Change(value.Code);
-        }
-    }
-
     public string Title => "LaunchPlanner";
     public string Summary => Strings.About_Summary;
     public string Disclaimer => Strings.About_Disclaimer;

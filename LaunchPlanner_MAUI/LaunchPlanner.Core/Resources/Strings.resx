@@ -9,7 +9,7 @@
   <data name="Tab_Events" xml:space="preserve"><value>Events</value></data>
   <data name="Tab_About" xml:space="preserve"><value>About</value></data>
   <data name="Tab_Settings" xml:space="preserve"><value>Settings</value></data>
-  <data name="Settings_NoOptions" xml:space="preserve"><value>No options are available on this platform.</value></data>
+  <data name="Settings_Language" xml:space="preserve"><value>Language</value></data>
   <data name="Settings_Startup_Windows" xml:space="preserve"><value>Start LaunchPlanner when Windows starts</value></data>
   <data name="Settings_Startup_Android" xml:space="preserve"><value>Re-arm the alarms when the phone restarts</value></data>
   <data name="Error_StartupChangeFailed" xml:space="preserve"><value>Cannot change the automatic start: {0}</value></data>
@@ -60,6 +60,16 @@
   <data name="Events_Tooltip_Close" xml:space="preserve"><value>Close the event editor.</value></data>
   <data name="Events_Tooltip_EventList" xml:space="preserve"><value>Select an event to edit it.</value></data>
   <data name="EventRow_Duration" xml:space="preserve"><value>duration</value></data>
+  <data name="Events_DurationDays_Short" xml:space="preserve"><value>d</value><comment>Column heading above the days field of the duration</comment></data>
+  <data name="Events_DurationHours_Short" xml:space="preserve"><value>h</value><comment>Column heading above the hours field of the duration</comment></data>
+  <data name="Events_DurationMinutes_Short" xml:space="preserve"><value>min</value><comment>Column heading above the minutes field of the duration</comment></data>
+  <data name="Events_DurationSeconds_Short" xml:space="preserve"><value>s</value><comment>Column heading above the seconds field of the duration</comment></data>
+  <data name="Unit_Seconds" xml:space="preserve"><value>seconds</value></data>
+  <data name="Unit_Minutes" xml:space="preserve"><value>minutes</value></data>
+  <data name="Unit_Hours" xml:space="preserve"><value>hours</value></data>
+  <data name="Unit_Days" xml:space="preserve"><value>days</value></data>
+  <data name="Unit_Months" xml:space="preserve"><value>months</value></data>
+  <data name="Unit_Years" xml:space="preserve"><value>years</value></data>
 
   <data name="Log_Reload" xml:space="preserve"><value>Reload from file</value></data>
   <data name="Log_EditFile" xml:space="preserve"><value>Edit file</value></data>
@@ -72,8 +82,6 @@
   <data name="About_Disclaimer" xml:space="preserve"><value>This program is free of charge. The Author provides no warranty of any kind, neither of functionality nor of fitness for the user's needs.</value></data>
   <data name="About_Version" xml:space="preserve"><value>Version {0}</value><comment>{0} = version number</comment></data>
   <data name="About_Country" xml:space="preserve"><value>ITALY</value></data>
-  <data name="About_Language" xml:space="preserve"><value>Language</value></data>
-  <data name="Language_System" xml:space="preserve"><value>System language</value></data>
 
   <data name="Period_Custom" xml:space="preserve"><value>custom</value></data>
   <data name="Period_SingleShot" xml:space="preserve"><value>non-periodic</value></data>

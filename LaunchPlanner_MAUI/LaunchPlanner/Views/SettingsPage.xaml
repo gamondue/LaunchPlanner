@@ -3,12 +3,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:LaunchPlanner.Core.ViewModels;assembly=LaunchPlanner.Core"
              xmlns:res="clr-namespace:LaunchPlanner.Core.Resources;assembly=LaunchPlanner.Core"
+             xmlns:models="clr-namespace:LaunchPlanner.Core.Models;assembly=LaunchPlanner.Core"
              x:Class="LaunchPlanner.Views.SettingsPage"
              x:DataType="vm:SettingsViewModel"
              Title="{x:Static res:Strings.Tab_Settings}">
 
     <ScrollView>
         <VerticalStackLayout Padding="24" Spacing="12" MaximumWidthRequest="640" HorizontalOptions="Start">
+            <VerticalStackLayout Spacing="6">
+                <Label Text="{x:Static res:Strings.Settings_Language}" />
+                <Picker ItemsSource="{Binding Languages}"
+                        SelectedItem="{Binding SelectedLanguage}"
+                        ItemDisplayBinding="{Binding Caption, x:DataType=models:LanguageOption}"
+                        WidthRequest="200"
+                        HorizontalOptions="Start" />
+            </VerticalStackLayout>
+
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" IsVisible="{Binding IsStartupSupported}">
                 <Label Text="{Binding StartupCaption}" VerticalOptions="Center" />
                 <Switch Grid.Column="1" IsToggled="{Binding IsStartupEnabled}" />
@@ -28,7 +38,6 @@
                        IsVisible="{Binding IsRestartNeeded}" />
             </VerticalStackLayout>
 
-            <Label Text="{x:Static res:Strings.Settings_NoOptions}" IsVisible="{Binding HasNoOptions}" />
         </VerticalStackLayout>
     </ScrollView>
 

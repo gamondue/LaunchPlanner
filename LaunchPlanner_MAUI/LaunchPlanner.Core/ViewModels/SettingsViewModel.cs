@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LaunchPlanner.Core.Models;
 using LaunchPlanner.Core.Resources;
 using LaunchPlanner.Core.Services;
 
@@ -8,13 +9,26 @@ namespace LaunchPlanner.Core.ViewModels;
 public sealed partial class SettingsViewModel(
     IStartupSettings startup,
     IDataFolderSettings dataFolder,
+    LanguageService language,
     ActivityLog log) : ObservableObject
 {
+    public IReadOnlyList<LanguageOption> Languages => language.Options;
+
+    // Il cambio ricostruisce l'interfaccia: la pagina che ospita il selettore viene sostituita
+    public LanguageOption? SelectedLanguage
+    {
+        get => Languages.First(option => option.Code == language.Current);
+        set
+        {
+            if (value is not null)
+                language.Change(value.Code);
+        }
+    }
+
     public bool IsStartupSupported => startup.IsSupported;
     public string StartupCaption => startup.Caption;
 
     public bool IsDataFolderSupported => dataFolder.IsSupported;
-    public bool HasNoOptions => !startup.IsSupported && !dataFolder.IsSupported;
 
     public bool IsStartupEnabled
     {

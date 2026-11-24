@@ -9,40 +9,63 @@ public sealed class LanguageServiceTests : IDisposable
 {
     private sealed class FakeStore : ILanguageStore
     {
-        public string Language { get; set; } = LanguageService.SystemLanguage;
+        public string Language { get; set; } = LanguageService.English;
+    }
+
+    private sealed class FakeStartup : IStartupSettings
+    {
+        public bool IsSupported => false;
+        public string Caption => "";
+        public bool IsEnabled { get; set; }
+    }
+
+    private sealed class FakeDataFolder : IDataFolderSettings
+    {
+        public bool IsSupported => false;
+        public string DefaultFolder => "";
+        public string SelectedFolder => "";
+        public Task<string?> PickFolderAsync() => Task.FromResult<string?>(null);
+        public void Select(string? folder) { }
     }
 
     private readonly FakeStore store = new();
     private readonly LanguageService language;
 
-    public LanguageServiceTests() => language = new LanguageService(store);
+    public LanguageServiceTests()
+    {
+        language = new LanguageService(store);
+        language.Apply();
+    }
 
     public void Dispose() => Strings.Culture = null;
 
-    [Fact]
-    public void Apply_UsesTheSavedLanguage()
+    private SettingsViewModel NewSettings() => new(new FakeStartup(), new FakeDataFolder(), language, new ActivityLog());
+
+    [Theory]
+    [InlineData("en", "Yes")]
+    [InlineData("it", "Sì")]
+    public void Apply_UsesTheSavedLanguage(string saved, string expectedYes)
     {
-        store.Language = "en";
+        store.Language = saved;
 
         language.Apply();
 
-        Assert.Equal("en", language.Current);
-        Assert.Equal("Yes", Strings.Common_Yes);
+        Assert.Equal(saved, language.Current);
+        Assert.Equal(expectedYes, Strings.Common_Yes);
     }
 
     [Theory]
     [InlineData("")]
     [InlineData("xx")]
     [InlineData("not a language")]
-    public void Apply_FollowsTheSystem_WithoutAValidChoice(string saved)
+    public void Apply_FallsBackToEnglish_WithoutAValidChoice(string saved)
     {
         store.Language = saved;
 
         language.Apply();
 
-        Assert.Null(Strings.Culture);
-        Assert.Equal(LanguageService.SystemLanguage, language.Current);
-        Assert.Equal("Sì", Strings.Common_Yes); // i test girano in italiano
+        Assert.Equal(LanguageService.English, language.Current);
+        Assert.Equal("Yes", Strings.Common_Yes);
     }
 
     [Fact]
@@ -51,58 +74,55 @@ public sealed class LanguageServiceTests : IDisposable
         var notifications = 0;
         language.Changed += () => notifications++;
 
-        language.Change("en");
+        language.Change("it");
 
-        Assert.Equal("en", store.Language);
-        Assert.Equal("Yes", Strings.Common_Yes);
+        Assert.Equal("it", store.Language);
+        Assert.Equal("Sì", Strings.Common_Yes);
         Assert.Equal(1, notifications);
     }
 
     [Fact]
     public void Change_DoesNothing_WhenTheLanguageIsAlreadyInUse()
     {
-        language.Change("en");
+        language.Change("it");
         var notifications = 0;
         language.Changed += () => notifications++;
 
-        language.Change("en");
+        language.Change("it");
 
         Assert.Equal(0, notifications);
     }
 
     [Fact]
-    public void Change_BackToSystem_ForgetsTheChoice()
+    public void Change_BackToEnglish_SavesTheChoice()
     {
-        language.Change("en");
+        language.Change("it");
 
-        language.Change(LanguageService.SystemLanguage);
+        language.Change(LanguageService.English);
 
-        Assert.Equal(LanguageService.SystemLanguage, store.Language);
-        Assert.Null(Strings.Culture);
+        Assert.Equal(LanguageService.English, store.Language);
+        Assert.Equal("Yes", Strings.Common_Yes);
     }
 
     [Fact]
-    public void Options_OfferSystemItalianAndEnglish()
+    public void Options_OfferEnglishAndItalian_EnglishFirst()
     {
-        Assert.Equal(
-            [LanguageService.SystemLanguage, "it", "en"],
-            language.Options.Select(option => option.Code));
+        Assert.Equal(["en", "it"], language.Options.Select(option => option.Code));
     }
 
     [Fact]
     public void Options_ShowEachLanguageInItsOwnName_WhateverTheCurrentLanguage()
     {
-        language.Change("en");
+        language.Change("it");
 
-        Assert.Equal(
-            ["System language", "Italiano", "English"],
-            language.Options.Select(option => option.Caption));
+        Assert.Equal(["English", "Italiano"], language.Options.Select(option => option.Caption));
     }
 
     [Fact]
     public void PeriodCaptions_FollowTheChange_AndKeepTheSelection()
     {
         var monday = PeriodOption.All.Single(option => option.Period == Periodicity.Monday);
+        language.Change("it");
         Assert.Equal("lunedì", monday.Caption);
 
         language.Change("en");
@@ -112,37 +132,66 @@ public sealed class LanguageServiceTests : IDisposable
     }
 
     [Fact]
+    public void OffsetUnitCaptions_FollowTheChange()
+    {
+        var months = NowOffsetUnit.Default;
+        Assert.Equal("months", months.Caption);
+
+        language.Change("it");
+
+        Assert.Equal("mesi", months.Caption);
+    }
+
+    [Fact]
     public void EventRow_ShowsTheNewLanguageWithoutBeingRecreated()
     {
         var row = new EventRow(new ScheduledEvent { Period = Periodicity.Day, Enabled = true });
-
-        language.Change("en");
-
-        Assert.Equal("day", row.Period);
         Assert.Equal("Yes", row.Enabled);
+
+        language.Change("it");
+
+        Assert.Equal("Sì", row.Enabled);
     }
 
     [Fact]
-    public void AboutViewModel_ChangesLanguageFromThePicker()
+    public void SettingsViewModel_StartsInEnglish_OnFirstLaunch()
     {
-        var about = new AboutViewModel("1.0", language);
-        Assert.Equal(LanguageService.SystemLanguage, about.SelectedLanguage?.Code);
+        var settings = NewSettings();
 
-        about.SelectedLanguage = about.Languages.Single(option => option.Code == "en");
+        Assert.Equal("en", settings.SelectedLanguage?.Code);
+    }
 
-        Assert.Equal("en", store.Language);
-        Assert.Equal("en", about.SelectedLanguage?.Code);
+    [Fact]
+    public void SettingsViewModel_ChangesLanguageFromThePicker()
+    {
+        var settings = NewSettings();
+
+        settings.SelectedLanguage = settings.Languages.Single(option => option.Code == "it");
+
+        Assert.Equal("it", store.Language);
+        Assert.Equal("it", settings.SelectedLanguage?.Code);
+        Assert.Equal("Sì", Strings.Common_Yes);
+    }
+
+    [Fact]
+    public void SettingsViewModel_IgnoresThePickerBeingCleared()
+    {
+        language.Change("it");
+        var settings = NewSettings();
+
+        settings.SelectedLanguage = null;
+
+        Assert.Equal("it", store.Language);
+    }
+
+    [Fact]
+    public void AboutViewModel_TranslatesVersionAfterAChange()
+    {
+        var about = new AboutViewModel("1.0");
         Assert.Equal("Version 1.0", about.Version);
-    }
 
-    [Fact]
-    public void AboutViewModel_IgnoresThePickerBeingCleared()
-    {
-        language.Change("en");
-        var about = new AboutViewModel("1.0", language);
+        language.Change("it");
 
-        about.SelectedLanguage = null;
-
-        Assert.Equal("en", store.Language);
+        Assert.Equal("Versione 1.0", about.Version);
     }
 }

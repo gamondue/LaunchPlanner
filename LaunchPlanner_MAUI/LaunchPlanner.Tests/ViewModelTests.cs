@@ -75,9 +75,18 @@ public sealed class ViewModelTests
         }
     }
 
+    private sealed class FakeLanguageStore : ILanguageStore
+    {
+        public string Language { get; set; } = LanguageService.English;
+    }
+
     private static SettingsViewModel NewSettings(
         IStartupSettings? startup = null, IDataFolderSettings? dataFolder = null, ActivityLog? log = null)
-        => new(startup ?? new FakeStartup(), dataFolder ?? new FakeDataFolder(), log ?? new ActivityLog());
+        => new(
+            startup ?? new FakeStartup(),
+            dataFolder ?? new FakeDataFolder(),
+            new LanguageService(new FakeLanguageStore()),
+            log ?? new ActivityLog());
 
     [Fact]
     public async Task Settings_ChoosingFolderStoresItAndAsksForRestart()
@@ -143,17 +152,17 @@ public sealed class ViewModelTests
 
         Assert.True(startup.IsEnabled);
         Assert.True(settings.IsStartupSupported);
-        Assert.False(settings.HasNoOptions);
         Assert.Equal("avvio", settings.StartupCaption);
     }
 
     [Fact]
-    public void Settings_ReportsNoOptionsWhenPlatformHasNone()
+    public void Settings_HidesPlatformOptionsThatAreNotSupported()
     {
         var settings = NewSettings(new FakeStartup { IsSupported = false }, new FakeDataFolder { IsSupported = false });
 
         Assert.False(settings.IsStartupSupported);
-        Assert.True(settings.HasNoOptions);
+        Assert.False(settings.IsDataFolderSupported);
+        Assert.Equal(["en", "it"], settings.Languages.Select(option => option.Code));
     }
 
     private sealed class FakeShell : IShellActions
@@ -529,7 +538,7 @@ public sealed class ViewModelTests
     {
         var f = new Fixture();
 
-        Assert.Equal("months", f.Events.SelectedNowOffsetUnit);
+        Assert.Equal(OffsetUnit.Months, f.Events.SelectedNowOffsetUnit?.Unit);
     }
 
     [Fact]
@@ -537,7 +546,7 @@ public sealed class ViewModelTests
     {
         var f = new Fixture();
         f.Events.NowOffsetValue = "2";
-        f.Events.SelectedNowOffsetUnit = "h";
+        f.Events.SelectedNowOffsetUnit = NowOffsetUnit.All.Single(option => option.Unit == OffsetUnit.Hours);
         var beforeStart = DateTime.Now;
         var beforeFinish = beforeStart.AddHours(2);
 

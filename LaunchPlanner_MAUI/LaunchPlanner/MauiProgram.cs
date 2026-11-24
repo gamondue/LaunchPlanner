@@ -36,8 +36,7 @@ namespace LaunchPlanner
                 .AddSingleton<LogViewModel>()
                 .AddSingleton<EventsViewModel>()
                 .AddSingleton<SettingsViewModel>()
-                .AddSingleton(services => new AboutViewModel(
-                    AppInfo.Current.VersionString, services.GetRequiredService<LanguageService>()))
+                .AddSingleton(_ => new AboutViewModel(AppInfo.Current.VersionString))
                 .AddTransient<LogPage>()
                 .AddTransient<EventsPage>()
                 .AddTransient<SettingsPage>()

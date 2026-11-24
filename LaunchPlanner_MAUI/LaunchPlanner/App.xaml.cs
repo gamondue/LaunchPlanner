@@ -23,13 +23,13 @@ namespace LaunchPlanner
         }
 
         // Rimandato: la richiesta arriva dal selettore della pagina che viene sostituita.
-        // Si riparte dall'About, dove si trova il selettore della lingua.
+        // Si riparte dalla Configurazione, dove si trova il selettore della lingua.
         private void RebuildInterface() => Dispatcher.Dispatch(() =>
         {
             foreach (var window in Windows)
             {
                 var shell = new AppShell();
-                shell.StartOnAbout();
+                shell.StartOnSettings();
                 window.Page = shell;
             }
         });

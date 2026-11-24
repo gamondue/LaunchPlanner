@@ -12,5 +12,7 @@
         }
 
         public void StartOnAbout() => Tabs.CurrentItem = AboutTab;
+
+        public void StartOnSettings() => Tabs.CurrentItem = SettingsTab;
     }
 }

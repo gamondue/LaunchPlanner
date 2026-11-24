@@ -14,11 +14,6 @@ public class LocalizationTests
     private static readonly CultureInfo Italian = CultureInfo.GetCultureInfo("it");
     private static readonly CultureInfo French = CultureInfo.GetCultureInfo("fr");
 
-    private sealed class NoLanguageStore : ILanguageStore
-    {
-        public string Language { get; set; } = LanguageService.SystemLanguage;
-    }
-
     private static Dictionary<string, string> StringsOf(CultureInfo culture)
         => Strings.ResourceManager.GetResourceSet(culture, createIfNotExists: true, tryParents: false)!
             .Cast<DictionaryEntry>()
@@ -96,6 +91,20 @@ public class LocalizationTests
     }
 
     [Fact]
+    public void EveryNowOffsetUnit_HasACaptionInBothLanguages()
+    {
+        var english = StringsOf(CultureInfo.InvariantCulture);
+        var italian = StringsOf(Italian);
+
+        foreach (var unit in Enum.GetValues<OffsetUnit>())
+        {
+            Assert.Contains(NowOffsetUnit.All, option => option.Unit == unit);
+            Assert.Contains($"Unit_{unit}", english.Keys);
+            Assert.Contains($"Unit_{unit}", italian.Keys);
+        }
+    }
+
+    [Fact]
     public void ParseErrors_FollowTheUserInterfaceLanguage()
     {
         WithCulture("en-US", () =>
@@ -159,7 +168,7 @@ public class LocalizationTests
     {
         WithCulture("en-US", () =>
         {
-            var about = new AboutViewModel("1.0", new LanguageService(new NoLanguageStore()));
+            var about = new AboutViewModel("1.0");
 
             Assert.Equal("Version 1.0", about.Version);
             Assert.Equal("ITALY", about.Country);

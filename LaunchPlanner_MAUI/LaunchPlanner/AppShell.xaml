@@ -17,6 +17,7 @@
             ContentTemplate="{DataTemplate views:EventsPage}"
             Route="events" />
         <ShellContent
+            x:Name="SettingsTab"
             Title="{x:Static res:Strings.Tab_Settings}"
             ContentTemplate="{DataTemplate views:SettingsPage}"
             Route="settings" />

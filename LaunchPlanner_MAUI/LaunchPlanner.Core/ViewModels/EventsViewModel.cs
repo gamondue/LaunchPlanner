@@ -12,8 +12,6 @@ public sealed partial class EventsViewModel : ObservableObject
 {
     private const string TimeFormat = "HH:mm:ss";
     private const int MaximumDurationField = 9999; // i valori enormi non stanno in un TimeSpan
-    private const string DefaultNowOffsetUnit = "months";
-    private static readonly IReadOnlyList<string> nowOffsetUnits = ["s", "min", "h", "days", DefaultNowOffsetUnit, "years"];
 
     private readonly EventStore store;
     private readonly IEventLauncher launcher;
@@ -39,7 +37,7 @@ public sealed partial class EventsViewModel : ObservableObject
     public ObservableCollection<EventRow> Rows { get; } = [];
 
     public IReadOnlyList<PeriodOption> Periods => PeriodOption.All;
-    public IReadOnlyList<string> NowOffsetUnits => nowOffsetUnits;
+    public IReadOnlyList<NowOffsetUnit> NowOffsetUnits => NowOffsetUnit.All;
 
     [ObservableProperty]
     public partial EventRow? SelectedRow { get; set; }
@@ -60,7 +58,7 @@ public sealed partial class EventsViewModel : ObservableObject
     public partial string NowOffsetValue { get; set; } = "0";
 
     [ObservableProperty]
-    public partial string? SelectedNowOffsetUnit { get; set; }
+    public partial NowOffsetUnit? SelectedNowOffsetUnit { get; set; }
 
     [ObservableProperty]
     public partial string DurationDays { get; set; } = "0";
@@ -243,7 +241,7 @@ public sealed partial class EventsViewModel : ObservableObject
         FinishDate = now.Date;
         FinishTime = "";
         NowOffsetValue = "0";
-        SelectedNowOffsetUnit = DefaultNowOffsetUnit;
+        SelectedNowOffsetUnit = NowOffsetUnit.Default;
         DurationDays = "0";
         DurationHours = "0";
         DurationMinutes = "0";
@@ -307,33 +305,33 @@ public sealed partial class EventsViewModel : ObservableObject
             ? day.Date + clock.ToTimeSpan()
             : null;
 
-    private bool TryReadNowOffset(out int amount, out string unit)
+    private bool TryReadNowOffset(out int amount, out OffsetUnit unit)
     {
         amount = 0;
-        unit = "";
+        unit = default;
 
-        if (SelectedNowOffsetUnit is null || !nowOffsetUnits.Contains(SelectedNowOffsetUnit))
+        if (SelectedNowOffsetUnit is null)
             return false;
         if (!int.TryParse(NowOffsetValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
             return false;
 
         amount = Math.Clamp(value, 0, MaximumDurationField);
-        unit = SelectedNowOffsetUnit;
+        unit = SelectedNowOffsetUnit.Unit;
         return true;
     }
 
-    private static DateTime? ApplyNowOffset(DateTime value, int amount, string unit)
+    private static DateTime? ApplyNowOffset(DateTime value, int amount, OffsetUnit unit)
     {
         try
         {
             return unit switch
             {
-                "s" => value.AddSeconds(amount),
-                "min" => value.AddMinutes(amount),
-                "h" => value.AddHours(amount),
-                "days" => value.AddDays(amount),
-                "months" => value.AddMonths(amount),
-                "years" => value.AddYears(amount),
+                OffsetUnit.Seconds => value.AddSeconds(amount),
+                OffsetUnit.Minutes => value.AddMinutes(amount),
+                OffsetUnit.Hours => value.AddHours(amount),
+                OffsetUnit.Days => value.AddDays(amount),
+                OffsetUnit.Months => value.AddMonths(amount),
+                OffsetUnit.Years => value.AddYears(amount),
                 _ => null,
             };
         }

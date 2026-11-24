@@ -42,6 +42,7 @@
                             <Entry Text="{Binding NowOffsetValue}" Keyboard="Numeric" WidthRequest="56" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EndOffsetValue}" />
                             <Picker ItemsSource="{Binding NowOffsetUnits}"
                                     SelectedItem="{Binding SelectedNowOffsetUnit}"
+                                    ItemDisplayBinding="{Binding Caption, x:DataType=models:NowOffsetUnit}"
                                     WidthRequest="120"
                                     ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EndOffsetUnit}" />
                         </HorizontalStackLayout>
@@ -52,10 +53,10 @@
                         <Grid ColumnDefinitions="56,56,56,56"
                               RowDefinitions="Auto,Auto"
                               ColumnSpacing="4">
-                            <Label Grid.Row="0" Grid.Column="0" Text="d" HorizontalTextAlignment="Center" />
-                            <Label Grid.Row="0" Grid.Column="1" Text="h" HorizontalTextAlignment="Center" />
-                            <Label Grid.Row="0" Grid.Column="2" Text="min" HorizontalTextAlignment="Center" />
-                            <Label Grid.Row="0" Grid.Column="3" Text="s" HorizontalTextAlignment="Center" />
+                            <Label Grid.Row="0" Grid.Column="0" Text="{x:Static res:Strings.Events_DurationDays_Short}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Row="0" Grid.Column="1" Text="{x:Static res:Strings.Events_DurationHours_Short}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Row="0" Grid.Column="2" Text="{x:Static res:Strings.Events_DurationMinutes_Short}" HorizontalTextAlignment="Center" />
+                            <Label Grid.Row="0" Grid.Column="3" Text="{x:Static res:Strings.Events_DurationSeconds_Short}" HorizontalTextAlignment="Center" />
                             <Entry Grid.Row="1" Grid.Column="0" Text="{Binding DurationDays}" Style="{StaticResource DurationEntry}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_DurationDays}" />
                             <Entry Grid.Row="1" Grid.Column="1" Text="{Binding DurationHours}" Style="{StaticResource DurationEntry}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_DurationHours}" />
                             <Entry Grid.Row="1" Grid.Column="2" Text="{Binding DurationMinutes}" Style="{StaticResource DurationEntry}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_DurationMinutes}" />

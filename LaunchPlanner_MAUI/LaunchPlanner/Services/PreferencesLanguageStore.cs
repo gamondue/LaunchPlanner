@@ -8,7 +8,7 @@ namespace LaunchPlanner.Services
 
         public string Language
         {
-            get => Preferences.Default.Get(LanguageKey, LanguageService.SystemLanguage);
+            get => Preferences.Default.Get(LanguageKey, LanguageService.English);
             set => Preferences.Default.Set(LanguageKey, value);
         }
     }

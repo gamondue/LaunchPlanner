@@ -8,19 +8,17 @@ namespace LaunchPlanner.Core.Services;
 // vale per tutti i thread e lascia le date nel formato regionale dell'utente.
 public sealed class LanguageService(ILanguageStore store)
 {
-    public const string SystemLanguage = "";
+    public const string English = "en"; // la lingua del primo avvio e di ogni scelta non valida
+    public const string Italian = "it";
 
-    private const string Italian = "it";
-    private const string English = "en";
-
+    // Ogni lingua è scritta nel proprio nome, qualunque sia la lingua in uso
     public IReadOnlyList<LanguageOption> Options =>
     [
-        new(SystemLanguage, Strings.Language_System),
-        new(Italian, "Italiano"),
         new(English, "English"),
+        new(Italian, "Italiano"),
     ];
 
-    public string Current => Strings.Culture?.Name ?? SystemLanguage;
+    public string Current => Strings.Culture?.Name ?? English;
 
     // Dopo un cambio l'interfaccia già creata va ricostruita: la XAML legge i testi una volta sola
     public event Action? Changed;
@@ -28,8 +26,7 @@ public sealed class LanguageService(ILanguageStore store)
     public void Apply()
     {
         var saved = store.Language;
-        var isTranslated = saved is Italian or English;
-        Strings.Culture = isTranslated ? CultureInfo.GetCultureInfo(saved) : null;
+        Strings.Culture = CultureInfo.GetCultureInfo(saved == Italian ? Italian : English);
     }
 
     public void Change(string language)

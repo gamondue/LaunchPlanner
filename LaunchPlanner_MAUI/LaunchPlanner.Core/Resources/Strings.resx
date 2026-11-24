@@ -8,6 +8,16 @@
   <data name="Tab_Activity" xml:space="preserve"><value>Activity</value></data>
   <data name="Tab_Events" xml:space="preserve"><value>Events</value></data>
   <data name="Tab_About" xml:space="preserve"><value>About</value></data>
+  <data name="Tab_Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Settings_NoOptions" xml:space="preserve"><value>No options are available on this platform.</value></data>
+  <data name="Settings_Startup_Windows" xml:space="preserve"><value>Start LaunchPlanner when Windows starts</value></data>
+  <data name="Settings_Startup_Android" xml:space="preserve"><value>Re-arm the alarms when the phone restarts</value></data>
+  <data name="Error_StartupChangeFailed" xml:space="preserve"><value>Cannot change the automatic start: {0}</value></data>
+  <data name="Settings_DataFolder_Label" xml:space="preserve"><value>Folder where the schedule file is stored</value></data>
+  <data name="Settings_DataFolder_Choose" xml:space="preserve"><value>Choose...</value></data>
+  <data name="Settings_DataFolder_Default" xml:space="preserve"><value>Use default</value></data>
+  <data name="Settings_DataFolder_RestartNeeded" xml:space="preserve"><value>The new folder will be used the next time LaunchPlanner starts.</value></data>
+  <data name="Error_DataFolderChangeFailed" xml:space="preserve"><value>Cannot change the data folder: {0}</value></data>
 
   <data name="Common_Yes" xml:space="preserve"><value>Yes</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>
@@ -98,6 +108,7 @@
   <data name="Error_InvalidTime" xml:space="preserve"><value>Invalid time: use the format hours:minutes:seconds</value></data>
   <data name="Error_InvalidNowOffset" xml:space="preserve"><value>Invalid Now offset: enter a number and unit.</value></data>
   <data name="Error_UrlRequired" xml:space="preserve"><value>Enter a URI or file path.</value></data>
+  <data name="Error_AddBeforeSave" xml:space="preserve"><value>No events to save: click Add first.</value></data>
   <data name="Error_CannotWriteFile" xml:space="preserve"><value>The file could not be written: {0}</value><comment>{0} = system message</comment></data>
   <data name="Error_CannotOpenTarget" xml:space="preserve"><value>Cannot open the URI/file: {0}</value><comment>{0} = system message</comment></data>
   <data name="Error_CannotOpenSchedule" xml:space="preserve"><value>Cannot open the file {0}: {1}</value><comment>{0} = path, {1} = system message</comment></data>

@@ -38,6 +38,23 @@ public sealed class FiringService
             await LaunchAsync(item.Event);
     }
 
+    // All'avvio del programma gli eventi in corso (da attivazione ad attivazione + durata)
+    // vengono lanciati di nuovo, anche se già lanciati prima della chiusura
+    public async Task RunStartupAsync(DateTime now, TimeSpan? minimumWindow = null)
+    {
+        store.EnsureLoaded();
+        var state = Fired();
+        foreach (var ev in store.Events.Where(ev => IsInProgress(ev, now)))
+            state.Forget(ev);
+
+        await RunDueAsync(now, minimumWindow);
+    }
+
+    private static bool IsInProgress(ScheduledEvent ev, DateTime now)
+        => ev.Enabled && now <= ev.Finish
+            && OccurrenceCalculator.Latest(ev, now) is { } occurrence
+            && now <= occurrence + ev.Duration;
+
     // Per i sistemi che consegnano da soli l'occorrenza, senza passare da RunDueAsync
     public async Task LaunchOccurrenceAsync(ScheduledEvent ev, DateTime occurrence)
     {

@@ -10,7 +10,7 @@ namespace LaunchPlanner.Services
     {
         public bool CanEditFile => DeviceInfo.Platform == DevicePlatform.WinUI || DeviceInfo.Platform == DevicePlatform.MacCatalyst;
 
-        public bool CanExit => DeviceInfo.Platform == DevicePlatform.WinUI;
+        public bool CanExit => DeviceInfo.Platform == DevicePlatform.WinUI || DeviceInfo.Platform == DevicePlatform.Android;
 
         public void CloseEditor()
         {
@@ -37,6 +37,11 @@ namespace LaunchPlanner.Services
 #if WINDOWS
             IPlatformApplication.Current!.Services.GetRequiredService<TrayIcon>().Dispose();
             IPlatformApplication.Current!.Services.GetRequiredService<WindowHost>().Exit();
+#elif ANDROID
+            var scheduler = (PlatformBackgroundScheduler)IPlatformApplication.Current!.Services.GetRequiredService<IBackgroundScheduler>();
+            scheduler.Stop();
+            Platform.CurrentActivity?.FinishAndRemoveTask();
+            Android.OS.Process.KillProcess(Android.OS.Process.MyPid());
 #endif
         }
     }

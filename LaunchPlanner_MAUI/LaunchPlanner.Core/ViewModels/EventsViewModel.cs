@@ -12,7 +12,8 @@ public sealed partial class EventsViewModel : ObservableObject
 {
     private const string TimeFormat = "HH:mm:ss";
     private const int MaximumDurationField = 9999; // i valori enormi non stanno in un TimeSpan
-    private static readonly IReadOnlyList<string> nowOffsetUnits = ["s", "min", "h", "days", "months", "years"];
+    private const string DefaultNowOffsetUnit = "months";
+    private static readonly IReadOnlyList<string> nowOffsetUnits = ["s", "min", "h", "days", DefaultNowOffsetUnit, "years"];
 
     private readonly EventStore store;
     private readonly IEventLauncher launcher;
@@ -86,7 +87,11 @@ public sealed partial class EventsViewModel : ObservableObject
     public partial bool IsEventEnabled { get; set; }
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsMessageError))]
     public partial string Message { get; set; } = "";
+
+    // La riga di stato contiene solo errori e avvisi: se c'è un testo, va in rosso e in grassetto
+    public bool IsMessageError => Message.Length > 0;
 
     public void Refresh()
     {
@@ -160,17 +165,26 @@ public sealed partial class EventsViewModel : ObservableObject
     [RelayCommand]
     private void Save()
     {
+        if (Rows.Count == 0 && store.CanSave)
+        {
+            Message = Strings.Error_AddBeforeSave;
+            return;
+        }
+
         try
         {
             store.Save();
-            Message = "";
-            background.Rearm();
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex)
         {
+            // Qualunque causa impedisca il salvataggio va mostrata, non solo gli errori di I/O
             Message = string.Format(Strings.Error_CannotWriteFile, ex.Message);
             log.Add(Message);
+            return;
         }
+
+        Message = "";
+        background.Rearm();
     }
 
     [RelayCommand]
@@ -229,7 +243,7 @@ public sealed partial class EventsViewModel : ObservableObject
         FinishDate = now.Date;
         FinishTime = "";
         NowOffsetValue = "0";
-        SelectedNowOffsetUnit = nowOffsetUnits[1];
+        SelectedNowOffsetUnit = DefaultNowOffsetUnit;
         DurationDays = "0";
         DurationHours = "0";
         DurationMinutes = "0";

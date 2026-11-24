@@ -30,13 +30,17 @@ namespace LaunchPlanner
                 .AddSingleton<FiringService>()
                 .AddSingleton<IEventLauncher, PlatformEventLauncher>()
                 .AddSingleton<IBackgroundScheduler, PlatformBackgroundScheduler>()
+                .AddSingleton<IStartupSettings, PlatformStartupSettings>()
+                .AddSingleton<IDataFolderSettings, DataFolderSettings>()
                 .AddSingleton<IShellActions, ShellActions>()
                 .AddSingleton<LogViewModel>()
                 .AddSingleton<EventsViewModel>()
+                .AddSingleton<SettingsViewModel>()
                 .AddSingleton(services => new AboutViewModel(
                     AppInfo.Current.VersionString, services.GetRequiredService<LanguageService>()))
                 .AddTransient<LogPage>()
                 .AddTransient<EventsPage>()
+                .AddTransient<SettingsPage>()
                 .AddTransient<AboutPage>();
 
 #if WINDOWS

@@ -1,0 +1,67 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using LaunchPlanner.Core.Resources;
+using LaunchPlanner.Core.Services;
+
+namespace LaunchPlanner.Core.ViewModels;
+
+public sealed partial class SettingsViewModel(
+    IStartupSettings startup,
+    IDataFolderSettings dataFolder,
+    ActivityLog log) : ObservableObject
+{
+    public bool IsStartupSupported => startup.IsSupported;
+    public string StartupCaption => startup.Caption;
+
+    public bool IsDataFolderSupported => dataFolder.IsSupported;
+    public bool HasNoOptions => !startup.IsSupported && !dataFolder.IsSupported;
+
+    public bool IsStartupEnabled
+    {
+        get => startup.IsEnabled;
+        set => startup.IsEnabled = value;
+    }
+
+    public string DataFolder => dataFolder.SelectedFolder;
+
+    public bool IsCustomDataFolder => !IsSameFolder(dataFolder.SelectedFolder, dataFolder.DefaultFolder);
+
+    // Si accende dopo una modifica, perché la nuova cartella vale dal prossimo avvio
+    [ObservableProperty]
+    private bool isRestartNeeded;
+
+    [RelayCommand]
+    private async Task ChooseDataFolderAsync()
+    {
+        var picked = await dataFolder.PickFolderAsync();
+        if (picked is not null) ChangeDataFolder(picked);
+    }
+
+    [RelayCommand]
+    private void UseDefaultDataFolder() => ChangeDataFolder(null);
+
+    private void ChangeDataFolder(string? folder)
+    {
+        if (IsSameFolder(folder ?? dataFolder.DefaultFolder, dataFolder.SelectedFolder)) return;
+
+        try
+        {
+            dataFolder.Select(folder);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            log.AddError(string.Format(Strings.Error_DataFolderChangeFailed, ex.Message));
+            return;
+        }
+
+        IsRestartNeeded = true;
+        OnPropertyChanged(nameof(DataFolder));
+        OnPropertyChanged(nameof(IsCustomDataFolder));
+    }
+
+    private static bool IsSameFolder(string a, string b) =>
+        string.Equals(Normalize(a), Normalize(b), StringComparison.OrdinalIgnoreCase);
+
+    private static string Normalize(string path) =>
+        Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+}

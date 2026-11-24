@@ -5,7 +5,11 @@ namespace LaunchPlanner.Services
     // La finestra MAUI esiste sempre: il programma vive nel tray e la finestra viene solo nascosta
     public sealed class WindowHost
     {
+        // Passato dalla voce di avvio automatico: al login non serve mostrare la finestra
+        public const string StartupArgument = "--startup";
+
         private static readonly TimeSpan SplashDuration = TimeSpan.FromSeconds(4);
+        private static readonly TimeSpan StartupSplashDuration = TimeSpan.FromSeconds(1);
 
         private Microsoft.UI.Xaml.Window? window;
         private bool isExiting;
@@ -17,7 +21,8 @@ namespace LaunchPlanner.Services
         {
             window = nativeWindow;
             window.AppWindow.Closing += OnClosing;
-            Application.Current!.Dispatcher.DispatchDelayed(SplashDuration, EndSplash);
+            var isStartup = Environment.GetCommandLineArgs().Contains(StartupArgument);
+            Application.Current!.Dispatcher.DispatchDelayed(isStartup ? StartupSplashDuration : SplashDuration, EndSplash);
         }
 
         public void Show(string route)

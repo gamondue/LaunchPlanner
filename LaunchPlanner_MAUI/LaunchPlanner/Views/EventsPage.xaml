@@ -4,7 +4,9 @@
              xmlns:vm="clr-namespace:LaunchPlanner.Core.ViewModels;assembly=LaunchPlanner.Core"
              xmlns:models="clr-namespace:LaunchPlanner.Core.Models;assembly=LaunchPlanner.Core"
              xmlns:res="clr-namespace:LaunchPlanner.Core.Resources;assembly=LaunchPlanner.Core"
+             xmlns:views="clr-namespace:LaunchPlanner.Views"
              x:Class="LaunchPlanner.Views.EventsPage"
+             x:Name="EventsRoot"
              x:DataType="vm:EventsViewModel"
              Title="{x:Static res:Strings.Events_Title}">
 
@@ -18,7 +20,7 @@
         </Style>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="2*,2.55*" RowSpacing="8" Padding="16">
+    <Grid RowDefinitions="Auto,*" RowSpacing="8" Padding="16">
         <ScrollView MaximumHeightRequest="340">
             <VerticalStackLayout Spacing="4">
                 <FlexLayout Wrap="Wrap" JustifyContent="Start">
@@ -44,9 +46,7 @@
                                     ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EndOffsetUnit}" />
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
-                </FlexLayout>
 
-                <FlexLayout Wrap="Wrap" JustifyContent="Start">
                     <VerticalStackLayout Style="{StaticResource FieldGroup}">
                         <Label Text="{x:Static res:Strings.Events_Duration}" />
                         <Grid ColumnDefinitions="56,56,56,56"
@@ -78,10 +78,17 @@
                     </VerticalStackLayout>
                 </FlexLayout>
 
-                <Label Text="{x:Static res:Strings.Events_Description}" />
-                <Entry Text="{Binding Description}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Description}" />
-                <Label Text="{x:Static res:Strings.Events_Url}" />
-                <Entry Text="{Binding Url}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Url}" />
+                <FlexLayout Direction="{Binding EventListDirection, Source={x:Reference EventsRoot}}"
+                            AlignItems="Stretch">
+                    <VerticalStackLayout FlexLayout.Grow="1" FlexLayout.Shrink="1" Margin="0,0,8,0" Spacing="0">
+                        <Label Text="{x:Static res:Strings.Events_Description}" />
+                        <Entry Text="{Binding Description}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Description}" />
+                    </VerticalStackLayout>
+                    <VerticalStackLayout FlexLayout.Grow="1" FlexLayout.Shrink="1" Margin="0,0,0,0" Spacing="0">
+                        <Label Text="{x:Static res:Strings.Events_Url}" />
+                        <Entry Text="{Binding Url}" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Url}" />
+                    </VerticalStackLayout>
+                </FlexLayout>
 
                 <FlexLayout Wrap="Wrap" JustifyContent="Start" Margin="0,8,0,0">
                     <Button Text="{x:Static res:Strings.Events_Clear}" Command="{Binding ClearCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Clear}" />
@@ -91,7 +98,14 @@
                     <Button Text="{x:Static res:Strings.Events_Save}" Command="{Binding SaveCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Save}" />
                     <Button Text="{x:Static res:Strings.Events_Close}" Command="{Binding CloseCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Close}" />
                 </FlexLayout>
-                <Label Text="{Binding Message}" TextColor="{StaticResource Primary}" />
+                <Label Text="{Binding Message}" TextColor="{StaticResource Primary}">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label" Binding="{Binding IsMessageError}" Value="True">
+                            <Setter Property="TextColor" Value="Red" />
+                            <Setter Property="FontAttributes" Value="Bold" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
             </VerticalStackLayout>
         </ScrollView>
 
@@ -102,8 +116,10 @@
                         ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EventList}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:EventRow">
-                    <VerticalStackLayout Padding="8" Spacing="2">
-                        <Label FontAttributes="Bold">
+                    <FlexLayout Padding="8"
+                                Direction="{Binding EventListDirection, Source={x:Reference EventsRoot}}"
+                                AlignItems="Stretch">
+                        <Label FontAttributes="Bold" Margin="0,0,8,2" FlexLayout.Grow="1" FlexLayout.Shrink="1">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="{Binding Description}" />
@@ -116,7 +132,7 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
-                        <Label FontSize="12">
+                        <Label FontSize="12" Margin="0,0,8,2" FlexLayout.Grow="1" FlexLayout.Shrink="1">
                             <Label.FormattedText>
                                 <FormattedString>
                                     <Span Text="{Binding Start}" />
@@ -129,8 +145,13 @@
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
-                        <Label Text="{Binding Url}" FontSize="12" LineBreakMode="TailTruncation" />
-                    </VerticalStackLayout>
+                        <Label Text="{Binding Url}"
+                               FontSize="12"
+                               Margin="0,0,8,0"
+                               LineBreakMode="TailTruncation"
+                               FlexLayout.Grow="1"
+                               FlexLayout.Shrink="1" />
+                    </FlexLayout>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

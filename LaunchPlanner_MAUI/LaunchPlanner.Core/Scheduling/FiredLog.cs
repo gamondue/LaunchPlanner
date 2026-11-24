@@ -19,6 +19,8 @@ public sealed class FiredLog
 
     public void Mark(ScheduledEvent ev, DateTime occurrence) => lastFired[KeyOf(ev)] = occurrence;
 
+    public void Forget(ScheduledEvent ev) => lastFired.Remove(KeyOf(ev));
+
     // La chiave dipende dai campi dell'evento: modificandolo non deve risultare mai lanciato
     public void Transfer(ScheduledEvent from, ScheduledEvent to)
     {

@@ -20,7 +20,13 @@ public sealed class ViewModelTests
         public string SchedulePath => "schedule.txt";
         public ScheduleParseResult Load()
             => IsScheduleLocked ? throw new IOException("bloccato") : ScheduleFile.Parse(Text);
-        public void Save(IReadOnlyList<ScheduledEvent> events) { Text = ScheduleFile.Format(events); Saves++; }
+        public Exception? SaveFailure { get; set; }
+        public void Save(IReadOnlyList<ScheduledEvent> events)
+        {
+            if (SaveFailure is not null) throw SaveFailure;
+            Text = ScheduleFile.Format(events);
+            Saves++;
+        }
         public FiredLog LoadFired() => IsFiredLocked ? throw new IOException("bloccato") : Fired;
         public void SaveFired(FiredLog fired) => Fired = fired;
     }
@@ -43,6 +49,111 @@ public sealed class ViewModelTests
         public int Rearms { get; private set; }
         public void Start() { }
         public void Rearm() => Rearms++;
+    }
+
+    private sealed class FakeStartup : IStartupSettings
+    {
+        public bool IsSupported { get; init; } = true;
+        public string Caption => "avvio";
+        public bool IsEnabled { get; set; }
+    }
+
+    private sealed class FakeDataFolder : IDataFolderSettings
+    {
+        public bool IsSupported { get; init; } = true;
+        public string DefaultFolder => Path.Combine(Path.GetTempPath(), "lp-default");
+        public string SelectedFolder { get; private set; } = Path.Combine(Path.GetTempPath(), "lp-default");
+        public string? Picked { get; set; }
+        public bool FailOnSelect { get; set; }
+
+        public Task<string?> PickFolderAsync() => Task.FromResult(Picked);
+
+        public void Select(string? folder)
+        {
+            if (FailOnSelect) throw new IOException("sola lettura");
+            SelectedFolder = folder ?? DefaultFolder;
+        }
+    }
+
+    private static SettingsViewModel NewSettings(
+        IStartupSettings? startup = null, IDataFolderSettings? dataFolder = null, ActivityLog? log = null)
+        => new(startup ?? new FakeStartup(), dataFolder ?? new FakeDataFolder(), log ?? new ActivityLog());
+
+    [Fact]
+    public async Task Settings_ChoosingFolderStoresItAndAsksForRestart()
+    {
+        var folder = new FakeDataFolder { Picked = Path.Combine(Path.GetTempPath(), "lp-custom") };
+        var settings = NewSettings(dataFolder: folder);
+        Assert.False(settings.IsCustomDataFolder);
+
+        await settings.ChooseDataFolderCommand.ExecuteAsync(null);
+
+        Assert.Equal(folder.Picked, folder.SelectedFolder);
+        Assert.Equal(folder.Picked, settings.DataFolder);
+        Assert.True(settings.IsCustomDataFolder);
+        Assert.True(settings.IsRestartNeeded);
+    }
+
+    [Fact]
+    public async Task Settings_CancelledPickerChangesNothing()
+    {
+        var folder = new FakeDataFolder { Picked = null };
+        var settings = NewSettings(dataFolder: folder);
+
+        await settings.ChooseDataFolderCommand.ExecuteAsync(null);
+
+        Assert.False(settings.IsRestartNeeded);
+        Assert.False(settings.IsCustomDataFolder);
+    }
+
+    [Fact]
+    public async Task Settings_UseDefaultRestoresDefaultFolder()
+    {
+        var folder = new FakeDataFolder { Picked = Path.Combine(Path.GetTempPath(), "lp-custom") };
+        var settings = NewSettings(dataFolder: folder);
+        await settings.ChooseDataFolderCommand.ExecuteAsync(null);
+
+        settings.UseDefaultDataFolderCommand.Execute(null);
+
+        Assert.Equal(folder.DefaultFolder, settings.DataFolder);
+        Assert.False(settings.IsCustomDataFolder);
+    }
+
+    [Fact]
+    public async Task Settings_FolderChangeFailureIsLoggedAndNotApplied()
+    {
+        var log = new ActivityLog();
+        var folder = new FakeDataFolder { Picked = Path.Combine(Path.GetTempPath(), "lp-custom"), FailOnSelect = true };
+        var settings = NewSettings(dataFolder: folder, log: log);
+
+        await settings.ChooseDataFolderCommand.ExecuteAsync(null);
+
+        Assert.False(settings.IsRestartNeeded);
+        Assert.False(settings.IsCustomDataFolder);
+        Assert.NotEmpty(log.Text);
+    }
+
+    [Fact]
+    public void Settings_WritesStartupChoiceThroughToPlatform()
+    {
+        var startup = new FakeStartup();
+        var settings = NewSettings(startup);
+
+        settings.IsStartupEnabled = true;
+
+        Assert.True(startup.IsEnabled);
+        Assert.True(settings.IsStartupSupported);
+        Assert.False(settings.HasNoOptions);
+        Assert.Equal("avvio", settings.StartupCaption);
+    }
+
+    [Fact]
+    public void Settings_ReportsNoOptionsWhenPlatformHasNone()
+    {
+        var settings = NewSettings(new FakeStartup { IsSupported = false }, new FakeDataFolder { IsSupported = false });
+
+        Assert.False(settings.IsStartupSupported);
+        Assert.True(settings.HasNoOptions);
     }
 
     private sealed class FakeShell : IShellActions
@@ -108,6 +219,32 @@ public sealed class ViewModelTests
 
         var restarted = new FiringService(f.Store, f.Repository, f.Launcher, f.Log);
         await restarted.RunDueAsync(Now.AddMinutes(1));
+
+        Assert.Single(f.Launcher.Opened);
+    }
+
+    [Fact]
+    public async Task Startup_RelaunchesAnEventStillInsideItsDuration()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        await f.Firing.RunDueAsync(Now);
+
+        var restarted = new FiringService(f.Store, f.Repository, f.Launcher, f.Log);
+        await restarted.RunStartupAsync(Now.AddMinutes(10));
+
+        Assert.Equal(2, f.Launcher.Opened.Count);
+    }
+
+    [Fact]
+    public async Task Startup_DoesNotRelaunchAnEventWhoseDurationHasEnded()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        await f.Firing.RunDueAsync(Now);
+
+        var restarted = new FiringService(f.Store, f.Repository, f.Launcher, f.Log);
+        await restarted.RunStartupAsync(Now.AddMinutes(20));
 
         Assert.Single(f.Launcher.Opened);
     }
@@ -388,6 +525,14 @@ public sealed class ViewModelTests
     }
 
     [Fact]
+    public void NowOffsetUnit_DefaultsToMonths()
+    {
+        var f = new Fixture();
+
+        Assert.Equal("months", f.Events.SelectedNowOffsetUnit);
+    }
+
+    [Fact]
     public void StartNow_SetsStartNow_AndEndWithOffset()
     {
         var f = new Fixture();
@@ -446,6 +591,78 @@ public sealed class ViewModelTests
 
         Assert.Equal(1, f.Repository.Saves);
         Assert.Equal(1, f.Background.Rearms);
+    }
+
+    [Fact]
+    public void SavingWithoutEvents_AsksToAddFirst()
+    {
+        var f = new Fixture();
+
+        f.Events.SaveCommand.Execute(null);
+
+        Assert.Equal(0, f.Repository.Saves);
+        Assert.Equal(0, f.Background.Rearms);
+        Assert.Equal("Nessun evento da salvare: fare prima Aggiungi.", f.Events.Message);
+    }
+
+    [Fact]
+    public void SavingWithoutEvents_HighlightsTheMessageAsError()
+    {
+        var f = new Fixture();
+
+        f.Events.SaveCommand.Execute(null);
+
+        Assert.True(f.Events.IsMessageError);
+    }
+
+    [Fact]
+    public void SaveFailureOfAnyKind_IsShownAsErrorAndNotRearmed()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        f.Events.Refresh();
+        f.Repository.SaveFailure = new InvalidOperationException("causa imprevista");
+
+        f.Events.SaveCommand.Execute(null);
+
+        Assert.True(f.Events.IsMessageError);
+        Assert.Contains("causa imprevista", f.Events.Message);
+        Assert.Equal(0, f.Background.Rearms);
+    }
+
+    [Fact]
+    public void MessageAfterASuccessfulSave_IsNotHighlighted()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        f.Events.Refresh();
+        f.Repository.SaveFailure = new IOException("bloccato");
+        f.Events.SaveCommand.Execute(null);
+
+        f.Repository.SaveFailure = null;
+        f.Events.SaveCommand.Execute(null);
+
+        Assert.False(f.Events.IsMessageError);
+        Assert.Equal("", f.Events.Message);
+    }
+
+    [Fact]
+    public void ValidationMessagesAreHighlightedToo()
+    {
+        var f = new Fixture();
+
+        f.Events.AddCommand.Execute(null);
+
+        Assert.Equal("Definire la periodicità dell'evento", f.Events.Message);
+        Assert.True(f.Events.IsMessageError);
+    }
+
+    [Fact]
+    public void EmptyMessageIsNotHighlighted()
+    {
+        var f = new Fixture();
+
+        Assert.False(f.Events.IsMessageError);
     }
 
     [Fact]

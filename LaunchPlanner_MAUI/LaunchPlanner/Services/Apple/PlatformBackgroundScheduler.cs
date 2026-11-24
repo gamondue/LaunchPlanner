@@ -14,6 +14,8 @@ namespace LaunchPlanner.Services
         // Limite imposto dal sistema alle notifiche locali in attesa
         private const int MaximumPending = 64;
 
+        private bool hasProcessStarted;
+
         public void Start() => _ = RunAsync();
 
         public void Rearm()
@@ -43,6 +45,11 @@ namespace LaunchPlanner.Services
                     UNAuthorizationOptions.Alert | UNAuthorizationOptions.Sound);
                 if (!authorization.Item1)
                     log.AddError(Strings.Error_NotificationsDenied);
+                if (!hasProcessStarted)
+                {
+                    hasProcessStarted = true;
+                    await firing.RunStartupAsync(DateTime.Now);
+                }
                 await firing.RunDueAsync(DateTime.Now);
                 Rearm();
             }

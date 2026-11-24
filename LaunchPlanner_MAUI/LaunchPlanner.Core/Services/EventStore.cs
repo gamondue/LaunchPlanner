@@ -12,6 +12,7 @@ public sealed class EventStore(IEventRepository repository, ActivityLog log)
     private bool hasLoadFailed;
 
     public IReadOnlyList<ScheduledEvent> Events => events;
+    public bool CanSave => !hasLoadFailed;
 
     public event Action? Changed;
 

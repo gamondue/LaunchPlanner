@@ -8,6 +8,16 @@
   <data name="Tab_Activity" xml:space="preserve"><value>Attività</value></data>
   <data name="Tab_Events" xml:space="preserve"><value>Eventi</value></data>
   <data name="Tab_About" xml:space="preserve"><value>About</value></data>
+  <data name="Tab_Settings" xml:space="preserve"><value>Configurazione</value></data>
+  <data name="Settings_NoOptions" xml:space="preserve"><value>Su questa piattaforma non ci sono opzioni disponibili.</value></data>
+  <data name="Settings_Startup_Windows" xml:space="preserve"><value>Avvia LaunchPlanner all'avvio di Windows</value></data>
+  <data name="Settings_Startup_Android" xml:space="preserve"><value>Riarma le sveglie al riavvio del telefono</value></data>
+  <data name="Error_StartupChangeFailed" xml:space="preserve"><value>Impossibile modificare l'avvio automatico: {0}</value></data>
+  <data name="Settings_DataFolder_Label" xml:space="preserve"><value>Cartella in cui è memorizzato il file degli eventi</value></data>
+  <data name="Settings_DataFolder_Choose" xml:space="preserve"><value>Scegli...</value></data>
+  <data name="Settings_DataFolder_Default" xml:space="preserve"><value>Usa predefinita</value></data>
+  <data name="Settings_DataFolder_RestartNeeded" xml:space="preserve"><value>La nuova cartella sarà usata al prossimo avvio di LaunchPlanner.</value></data>
+  <data name="Error_DataFolderChangeFailed" xml:space="preserve"><value>Impossibile cambiare la cartella dei dati: {0}</value></data>
 
   <data name="Common_Yes" xml:space="preserve"><value>Sì</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>
@@ -98,6 +108,7 @@
   <data name="Error_InvalidTime" xml:space="preserve"><value>Orario non valido: usare il formato ore:minuti:secondi</value></data>
   <data name="Error_InvalidNowOffset" xml:space="preserve"><value>Offset Ora non valido: inserire numero e unità.</value></data>
   <data name="Error_UrlRequired" xml:space="preserve"><value>Inserire un URI o percorso file.</value></data>
+  <data name="Error_AddBeforeSave" xml:space="preserve"><value>Nessun evento da salvare: fare prima Aggiungi.</value></data>
   <data name="Error_CannotWriteFile" xml:space="preserve"><value>Non è stato possibile scrivere il file: {0}</value></data>
   <data name="Error_CannotOpenTarget" xml:space="preserve"><value>Impossibile aprire l'URI/file: {0}</value></data>
   <data name="Error_CannotOpenSchedule" xml:space="preserve"><value>Impossibile aprire il file {0}: {1}</value></data>

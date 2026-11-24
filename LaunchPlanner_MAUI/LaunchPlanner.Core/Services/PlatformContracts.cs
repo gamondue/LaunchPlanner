@@ -23,6 +23,38 @@ public interface ILanguageStore
     string Language { get; set; }
 }
 
+// L'opzione di avvio automatico, il cui significato dipende dalla piattaforma:
+// su Windows lancia il programma al login, su Android riarma le sveglie al riavvio del telefono
+public interface IStartupSettings
+{
+    bool IsSupported { get; }
+
+    // Già nella lingua corrente
+    string Caption { get; }
+
+    bool IsEnabled { get; set; }
+}
+
+// La cartella dove sta il file degli eventi. Il cambio vale dal prossimo avvio,
+// perché il repository viene creato una sola volta all'avvio
+public interface IDataFolderSettings
+{
+    bool IsSupported { get; }
+
+    // La cartella predefinita, usata finché l'utente non ne sceglie un'altra
+    string DefaultFolder { get; }
+
+    // La cartella scelta: coincide con DefaultFolder se non ne è stata scelta un'altra
+    string SelectedFolder { get; }
+
+    // Null se l'utente annulla la finestra di scelta
+    Task<string?> PickFolderAsync();
+
+    // Null torna alla cartella predefinita. Copia il file degli eventi nella nuova cartella
+    // se lì non ce n'è già uno; lancia IOException o UnauthorizedAccessException se non riesce
+    void Select(string? folder);
+}
+
 public interface IShellActions
 {
     bool CanEditFile { get; }

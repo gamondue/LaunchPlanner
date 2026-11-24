@@ -19,6 +19,7 @@ namespace LaunchPlanner.Services
             timer.Interval = CheckInterval;
             timer.Tick += OnTick;
             timer.Start();
+            _ = CheckAsync(firing.RunStartupAsync);
         }
 
         public void Rearm()
@@ -26,11 +27,13 @@ namespace LaunchPlanner.Services
             // Il controllo periodico legge sempre l'elenco aggiornato
         }
 
-        private async void OnTick(object? sender, EventArgs e)
+        private async void OnTick(object? sender, EventArgs e) => await CheckAsync(firing.RunDueAsync);
+
+        private async Task CheckAsync(Func<DateTime, TimeSpan?, Task> run)
         {
             try
             {
-                await firing.RunDueAsync(DateTime.Now);
+                await run(DateTime.Now, null);
             }
             catch (Exception ex)
             {

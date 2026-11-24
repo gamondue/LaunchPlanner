@@ -13,22 +13,60 @@ namespace LaunchPlanner.Services
     {
         private const int AlarmRequestCode = 1;
         private const string OverlayAskedKey = "overlayAsked";
+        private const string StoppedKey = "stoppedByUser";
 
         // Senza sveglie esatte, o in Doze, Android può consegnare la sveglia con diversi minuti di ritardo
         private static readonly TimeSpan LateAlarmWindow = TimeSpan.FromMinutes(15);
 
         private bool arePermissionsRequested;
+        private bool hasProcessStarted;
 
-        public void Start() => _ = RunAsync();
-
-        public void Rearm()
+        public void Start()
         {
-            store.EnsureLoaded();
+            Preferences.Default.Set(StoppedKey, false);
+            _ = RunAsync(requestPermissions: true);
+        }
+
+        // Avvio del processo (anche dal riavvio del telefono): rilancia gli eventi in corso
+        public async Task RunAtProcessStartAsync()
+        {
+            if (hasProcessStarted)
+                return;
+
+            hasProcessStarted = true;
+            try
+            {
+                await firing.RunStartupAsync(DateTime.Now, LateAlarmWindow);
+            }
+            catch (Exception ex)
+            {
+                log.AddError(string.Format(Strings.Error_EventCheckFailed, ex.Message));
+            }
+        }
+
+        // Uscita voluta dall'utente: toglie la sveglia e fa ignorare i riarmi di sistema
+        // (avvio del telefono, cambio d'orologio) finché l'app non viene riaperta a mano
+        public void Stop()
+        {
+            Preferences.Default.Set(StoppedKey, true);
+            var (alarms, alarm) = GetAlarm();
+            alarms.Cancel(alarm);
+        }
+
+        private static (AlarmManager Alarms, PendingIntent Alarm) GetAlarm()
+        {
             var context = Android.App.Application.Context;
             var alarms = (AlarmManager)context.GetSystemService(Context.AlarmService)!;
             var alarm = PendingIntent.GetBroadcast(
                 context, AlarmRequestCode, new Intent(context, typeof(EventAlarmReceiver)),
                 PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable)!;
+            return (alarms, alarm);
+        }
+
+        public void Rearm()
+        {
+            store.EnsureLoaded();
+            var (alarms, alarm) = GetAlarm();
 
             alarms.Cancel(alarm);
             if (EventScheduler.NextWake(store.Events, DateTime.Now) is not { } wake)
@@ -42,11 +80,16 @@ namespace LaunchPlanner.Services
         }
 
         // Lancia ciò che è in scadenza e arma la sveglia successiva
-        public async Task RunAsync()
+        public async Task RunAsync(bool requestPermissions = false)
         {
             try
             {
-                await RequestPermissionsOnceAsync();
+                if (!requestPermissions && Preferences.Default.Get(StoppedKey, false))
+                    return;
+                if (requestPermissions)
+                    await RequestPermissionsOnceAsync();
+                if (requestPermissions)
+                    await RunAtProcessStartAsync();
                 await firing.RunDueAsync(DateTime.Now, LateAlarmWindow);
                 Rearm();
             }
@@ -63,7 +106,8 @@ namespace LaunchPlanner.Services
                 return;
 
             arePermissionsRequested = true;
-            await Permissions.RequestAsync<Permissions.PostNotifications>();
+            if (OperatingSystem.IsAndroidVersionAtLeast(33))
+                await Permissions.RequestAsync<Permissions.PostNotifications>();
 
             var alarms = (AlarmManager)activity.GetSystemService(Context.AlarmService)!;
             if (OperatingSystem.IsAndroidVersionAtLeast(31) && !alarms.CanScheduleExactAlarms())

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LaunchPlanner.Core.ViewModels;assembly=LaunchPlanner.Core"
+             xmlns:res="clr-namespace:LaunchPlanner.Core.Resources;assembly=LaunchPlanner.Core"
+             x:Class="LaunchPlanner.Views.SettingsPage"
+             x:DataType="vm:SettingsViewModel"
+             Title="{x:Static res:Strings.Tab_Settings}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="12" MaximumWidthRequest="640" HorizontalOptions="Start">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16" IsVisible="{Binding IsStartupSupported}">
+                <Label Text="{Binding StartupCaption}" VerticalOptions="Center" />
+                <Switch Grid.Column="1" IsToggled="{Binding IsStartupEnabled}" />
+            </Grid>
+
+            <VerticalStackLayout Spacing="6" IsVisible="{Binding IsDataFolderSupported}">
+                <Label Text="{x:Static res:Strings.Settings_DataFolder_Label}" />
+                <Label Text="{Binding DataFolder}" FontAttributes="Bold" LineBreakMode="MiddleTruncation" />
+                <HorizontalStackLayout Spacing="8">
+                    <Button Text="{x:Static res:Strings.Settings_DataFolder_Choose}"
+                            Command="{Binding ChooseDataFolderCommand}" />
+                    <Button Text="{x:Static res:Strings.Settings_DataFolder_Default}"
+                            Command="{Binding UseDefaultDataFolderCommand}"
+                            IsEnabled="{Binding IsCustomDataFolder}" />
+                </HorizontalStackLayout>
+                <Label Text="{x:Static res:Strings.Settings_DataFolder_RestartNeeded}"
+                       IsVisible="{Binding IsRestartNeeded}" />
+            </VerticalStackLayout>
+
+            <Label Text="{x:Static res:Strings.Settings_NoOptions}" IsVisible="{Binding HasNoOptions}" />
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

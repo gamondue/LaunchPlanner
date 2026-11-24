@@ -146,10 +146,12 @@ public sealed class LanguageServiceTests : IDisposable
     public void EventRow_ShowsTheNewLanguageWithoutBeingRecreated()
     {
         var row = new EventRow(new ScheduledEvent { Period = Periodicity.Day, Enabled = true });
+        Assert.Equal("day", row.Period);
         Assert.Equal("Yes", row.Enabled);
 
         language.Change("it");
 
+        Assert.Equal("giorno", row.Period);
         Assert.Equal("Sì", row.Enabled);
     }
 

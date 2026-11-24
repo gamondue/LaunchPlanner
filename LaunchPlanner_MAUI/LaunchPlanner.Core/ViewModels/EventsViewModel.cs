@@ -18,23 +18,29 @@ public sealed partial class EventsViewModel : ObservableObject
     private readonly IBackgroundScheduler background;
     private readonly IShellActions shell;
     private readonly ActivityLog log;
+    private readonly IEventIconProvider icons;
     private bool isLoadingForm;
 
     public EventsViewModel(
         EventStore store, IEventLauncher launcher, IBackgroundScheduler background,
-        IShellActions shell, ActivityLog log)
+        IShellActions shell, ActivityLog log, IEventIconProvider icons)
     {
         this.store = store;
         this.launcher = launcher;
         this.background = background;
         this.shell = shell;
         this.log = log;
+        this.icons = icons;
         store.Changed += Refresh;
+        store.UnsavedChangesChanged += () => OnPropertyChanged(nameof(HasUnsavedChanges));
         Refresh();
         PrepareNewEventForm();
     }
 
     public ObservableCollection<EventRow> Rows { get; } = [];
+
+    // Il pulsante Salva lo mostra finché le modifiche non sono scritte sul file
+    public bool HasUnsavedChanges => store.HasUnsavedChanges;
 
     public IReadOnlyList<PeriodOption> Periods => PeriodOption.All;
     public IReadOnlyList<NowOffsetUnit> NowOffsetUnits => NowOffsetUnit.All;
@@ -96,7 +102,27 @@ public sealed partial class EventsViewModel : ObservableObject
         SelectedRow = null;
         Rows.Clear();
         foreach (var ev in store.Events)
-            Rows.Add(new EventRow(ev));
+        {
+            var row = new EventRow(ev, icons);
+            row.EnabledToggled += OnRowEnabledToggled;
+            Rows.Add(row);
+        }
+    }
+
+    // La casella della riga vale come una modifica del modulo: subito in memoria, sul file con Salva
+    private void OnRowEnabledToggled(EventRow row)
+    {
+        var index = Rows.IndexOf(row);
+        if (index < 0)
+            return;
+
+        store.Update(index, row.Event);
+        if (row != SelectedRow)
+            return;
+
+        isLoadingForm = true;
+        IsEventEnabled = row.Event.Enabled;
+        isLoadingForm = false;
     }
 
     partial void OnSelectedRowChanged(EventRow? value)

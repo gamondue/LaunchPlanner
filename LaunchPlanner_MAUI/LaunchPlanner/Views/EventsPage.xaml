@@ -11,6 +11,7 @@
              Title="{x:Static res:Strings.Events_Title}">
 
     <ContentPage.Resources>
+        <views:PngToImageSourceConverter x:Key="PngToImage" />
         <Style x:Key="DurationEntry" TargetType="Entry">
             <Setter Property="Keyboard" Value="Numeric" />
             <Setter Property="WidthRequest" Value="56" />
@@ -96,7 +97,14 @@
                     <Button Text="{x:Static res:Strings.Events_Add}" Command="{Binding AddCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Add}" />
                     <Button Text="{x:Static res:Strings.Events_Test}" Command="{Binding TestCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Test}" />
                     <Button Text="{x:Static res:Strings.Events_Delete}" Command="{Binding EraseCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Delete}" />
-                    <Button Text="{x:Static res:Strings.Events_Save}" Command="{Binding SaveCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Save}" />
+                    <Button Text="{x:Static res:Strings.Events_Save}" Command="{Binding SaveCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Save}">
+                        <Button.Triggers>
+                            <DataTrigger TargetType="Button" Binding="{Binding HasUnsavedChanges}" Value="True">
+                                <Setter Property="BackgroundColor" Value="Red" />
+                                <Setter Property="TextColor" Value="Yellow" />
+                            </DataTrigger>
+                        </Button.Triggers>
+                    </Button>
                     <Button Text="{x:Static res:Strings.Events_Close}" Command="{Binding CloseCommand}" Margin="0,0,8,8" ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Close}" />
                 </FlexLayout>
                 <Label Text="{Binding Message}" TextColor="{StaticResource Primary}">
@@ -117,7 +125,17 @@
                         ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_EventList}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="vm:EventRow">
-                    <FlexLayout Padding="8"
+                    <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8" Padding="8,0,0,0">
+                    <CheckBox IsChecked="{Binding IsEnabled}"
+                              VerticalOptions="Center"
+                              ToolTipProperties.Text="{x:Static res:Strings.Events_Tooltip_Enabled}" />
+                    <Image Grid.Column="1"
+                           Source="{Binding Icon, Converter={StaticResource PngToImage}}"
+                           WidthRequest="20"
+                           HeightRequest="20"
+                           VerticalOptions="Center" />
+                    <FlexLayout Grid.Column="2"
+                                Padding="0,8,8,8"
                                 Direction="{Binding EventListDirection, Source={x:Reference EventsRoot}}"
                                 AlignItems="Stretch">
                         <Label FontAttributes="Bold" Margin="0,0,8,2" FlexLayout.Grow="1" FlexLayout.Shrink="1">
@@ -153,6 +171,7 @@
                                FlexLayout.Grow="1"
                                FlexLayout.Shrink="1" />
                     </FlexLayout>
+                    </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>

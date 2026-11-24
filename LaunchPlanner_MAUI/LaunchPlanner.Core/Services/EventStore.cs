@@ -14,7 +14,12 @@ public sealed class EventStore(IEventRepository repository, ActivityLog log)
     public IReadOnlyList<ScheduledEvent> Events => events;
     public bool CanSave => !hasLoadFailed;
 
+    // Vero dopo una modifica non ancora scritta sul file
+    public bool HasUnsavedChanges { get; private set; }
+
     public event Action? Changed;
+
+    public event Action? UnsavedChangesChanged;
 
     public event Action<ScheduledEvent, ScheduledEvent>? Edited;
 
@@ -43,23 +48,35 @@ public sealed class EventStore(IEventRepository repository, ActivityLog log)
         }
     }
 
+    // Sostituisce l'elenco con quello letto dal file: non c'è niente da salvare
     public void Replace(IEnumerable<ScheduledEvent> newEvents)
     {
-        events = [.. newEvents];
-        isLoaded = true;
-        Changed?.Invoke();
+        SetEvents(newEvents);
+        SetUnsavedChanges(false);
     }
 
-    public void Add(ScheduledEvent ev) => Replace([.. events, ev]);
+    public void Add(ScheduledEvent ev)
+    {
+        SetEvents([.. events, ev]);
+        SetUnsavedChanges(true);
+    }
 
-    public void RemoveAt(int index) => Replace(events.Where((_, i) => i != index));
+    public void RemoveAt(int index)
+    {
+        SetEvents(events.Where((_, i) => i != index));
+        SetUnsavedChanges(true);
+    }
 
     // Non notifica Changed: serve a chi sta modificando la riga
     public void Update(int index, ScheduledEvent ev)
     {
         var before = events[index];
+        if (before == ev)
+            return;
+
         events = events.Select((current, i) => i == index ? ev : current).ToList();
         Edited?.Invoke(before, ev);
+        SetUnsavedChanges(true);
     }
 
     public void Save()
@@ -68,5 +85,22 @@ public sealed class EventStore(IEventRepository repository, ActivityLog log)
         if (hasLoadFailed)
             throw new IOException(string.Format(Strings.Error_ScheduleNotLoaded, repository.SchedulePath));
         repository.Save(events);
+        SetUnsavedChanges(false);
+    }
+
+    private void SetEvents(IEnumerable<ScheduledEvent> newEvents)
+    {
+        events = [.. newEvents];
+        isLoaded = true;
+        Changed?.Invoke();
+    }
+
+    private void SetUnsavedChanges(bool value)
+    {
+        if (HasUnsavedChanges == value)
+            return;
+
+        HasUnsavedChanges = value;
+        UnsavedChangesChanged?.Invoke();
     }
 }

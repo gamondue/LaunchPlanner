@@ -139,16 +139,16 @@ public class LocalizationTests
     }
 
     [Theory]
-    [InlineData("it-IT", "02/10/2018 14:50:00", "Sì")]
-    [InlineData("en-GB", "02/10/2018 14:50:00", "Yes")]
-    public void EventRow_FollowsTheUserCulture(string culture, string expectedStart, string expectedEnabled)
+    [InlineData("it-IT", "02/10/2018 14:50:00", "giorno")]
+    [InlineData("en-GB", "02/10/2018 14:50:00", "day")]
+    public void EventRow_FollowsTheUserCulture(string culture, string expectedStart, string expectedPeriod)
     {
         WithCulture(culture, () =>
         {
-            var row = new EventRow(new ScheduledEvent { Start = new DateTime(2018, 10, 2, 14, 50, 0), Enabled = true });
+            var row = new EventRow(new ScheduledEvent { Start = new DateTime(2018, 10, 2, 14, 50, 0), Period = Periodicity.Day });
 
             Assert.Equal(expectedStart, row.Start);
-            Assert.Equal(expectedEnabled, row.Enabled);
+            Assert.Equal(expectedPeriod, row.Period);
         });
     }
 

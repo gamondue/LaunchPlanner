@@ -8,6 +8,20 @@ public interface IEventLauncher
     Task LaunchAsync(ScheduledEvent ev);
 }
 
+// L'icona del programma che si aprirà allo scatto dell'evento: l'eseguibile stesso,
+// oppure il programma associato dal sistema all'estensione del file o allo schema dell'URL
+public interface IEventIconProvider
+{
+    // Immagine PNG, o null se il programma non si può determinare
+    byte[]? GetIconPng(string? url);
+}
+
+// Per le piattaforme dove l'icona non si può ricavare
+public sealed class NoEventIconProvider : IEventIconProvider
+{
+    public byte[]? GetIconPng(string? url) => null;
+}
+
 // La parte "residente": fa scattare gli eventi anche senza interfaccia utente
 public interface IBackgroundScheduler
 {

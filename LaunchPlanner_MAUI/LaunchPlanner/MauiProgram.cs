@@ -32,6 +32,11 @@ namespace LaunchPlanner
                 .AddSingleton<IBackgroundScheduler, PlatformBackgroundScheduler>()
                 .AddSingleton<IStartupSettings, PlatformStartupSettings>()
                 .AddSingleton<IDataFolderSettings, DataFolderSettings>()
+#if WINDOWS
+                .AddSingleton<IEventIconProvider, PlatformEventIconProvider>()
+#else
+                .AddSingleton<IEventIconProvider, NoEventIconProvider>()
+#endif
                 .AddSingleton<IShellActions, ShellActions>()
                 .AddSingleton<LogViewModel>()
                 .AddSingleton<EventsViewModel>()

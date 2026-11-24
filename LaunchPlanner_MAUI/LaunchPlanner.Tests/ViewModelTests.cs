@@ -1,5 +1,6 @@
 using LaunchPlanner.Core.Models;
 using LaunchPlanner.Core.Persistence;
+using LaunchPlanner.Core.Resources;
 using LaunchPlanner.Core.Scheduling;
 using LaunchPlanner.Core.Services;
 using LaunchPlanner.Core.ViewModels;
@@ -176,6 +177,13 @@ public sealed class ViewModelTests
         public void Exit() { }
     }
 
+    // L'"icona" è l'URL stesso in byte: basta a riconoscere per quale evento è stata chiesta
+    private sealed class FakeIcons : IEventIconProvider
+    {
+        public byte[]? GetIconPng(string? url)
+            => string.IsNullOrEmpty(url) ? null : System.Text.Encoding.UTF8.GetBytes(url);
+    }
+
     private sealed class Fixture
     {
         public FakeRepository Repository { get; } = new();
@@ -183,6 +191,7 @@ public sealed class ViewModelTests
         public FakeBackground Background { get; } = new();
         public FakeShell Shell { get; } = new();
         public ActivityLog Log { get; } = new();
+        public FakeIcons Icons { get; } = new();
         public EventStore Store { get; }
         public FiringService Firing { get; }
         public EventsViewModel Events { get; }
@@ -191,7 +200,7 @@ public sealed class ViewModelTests
         {
             Store = new EventStore(Repository, Log);
             Firing = new FiringService(Store, Repository, Launcher, Log);
-            Events = new EventsViewModel(Store, Launcher, Background, Shell, Log);
+            Events = new EventsViewModel(Store, Launcher, Background, Shell, Log, Icons);
         }
     }
 
@@ -205,6 +214,138 @@ public sealed class ViewModelTests
         Url = "https://example.org",
         Enabled = true,
     };
+
+    [Fact]
+    public void UnsavedChanges_AreOffAfterLoading()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+
+        Assert.False(f.Events.HasUnsavedChanges);
+    }
+
+    [Fact]
+    public void UnsavedChanges_FollowEditsAndSave()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        var notified = 0;
+        f.Events.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(EventsViewModel.HasUnsavedChanges)) notified++; };
+
+        f.Events.Rows[0].IsEnabled = false;
+        Assert.True(f.Events.HasUnsavedChanges);
+
+        f.Events.SaveCommand.Execute(null);
+
+        Assert.False(f.Events.HasUnsavedChanges);
+        Assert.Equal(2, notified);
+    }
+
+    [Fact]
+    public void UnsavedChanges_StayOnWhenSaveFails()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        f.Events.SelectedRow = f.Events.Rows[0];
+        f.Events.Description = "cambiata";
+        f.Repository.SaveFailure = new IOException("bloccato");
+
+        f.Events.SaveCommand.Execute(null);
+
+        Assert.True(f.Events.HasUnsavedChanges);
+    }
+
+    [Fact]
+    public void UnsavedChanges_AreSetByAddAndDelete_AndClearedByReload()
+    {
+        var f = new Fixture();
+        f.Repository.Text = ScheduleFile.Format([Sample()]);
+        f.Store.Reload();
+        f.Events.SelectedRow = f.Events.Rows[0];
+
+        f.Events.EraseCommand.Execute(null);
+        Assert.True(f.Events.HasUnsavedChanges);
+
+        f.Store.Reload();
+        Assert.False(f.Events.HasUnsavedChanges);
+    }
+
+    [Fact]
+    public void SelectingARow_IsNotAChange()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+
+        f.Events.SelectedRow = f.Events.Rows[0];
+
+        Assert.False(f.Events.HasUnsavedChanges);
+    }
+
+    [Fact]
+    public void RowEnabledText_FollowsTheCheckbox()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        var row = f.Events.Rows[0];
+        Assert.Equal(Strings.Common_Yes, row.Enabled);
+
+        row.IsEnabled = false;
+
+        Assert.Equal(Strings.Common_No, row.Enabled);
+    }
+
+    [Fact]
+    public void RowCheckbox_DisablesTheEventInMemoryWithoutSaving()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample("a"), Sample("b")]);
+
+        f.Events.Rows[1].IsEnabled = false;
+
+        Assert.False(f.Store.Events[1].Enabled);
+        Assert.True(f.Store.Events[0].Enabled);
+        Assert.Equal(0, f.Repository.Saves);
+    }
+
+    [Fact]
+    public void RowCheckbox_OnTheSelectedRow_UpdatesTheForm()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        f.Events.SelectedRow = f.Events.Rows[0];
+        Assert.True(f.Events.IsEventEnabled);
+
+        f.Events.Rows[0].IsEnabled = false;
+
+        Assert.False(f.Events.IsEventEnabled);
+        Assert.False(Assert.Single(f.Store.Events).Enabled);
+    }
+
+    [Fact]
+    public void FormCheckbox_UpdatesTheRowCheckbox()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        f.Events.SelectedRow = f.Events.Rows[0];
+
+        f.Events.IsEventEnabled = false;
+
+        Assert.False(f.Events.Rows[0].IsEnabled);
+    }
+
+    [Fact]
+    public void Row_ShowsTheIconOfItsUrl_AndFollowsUrlChanges()
+    {
+        var f = new Fixture();
+        f.Store.Replace([Sample()]);
+        var row = f.Events.Rows[0];
+        Assert.Equal("https://example.org", System.Text.Encoding.UTF8.GetString(row.Icon!));
+
+        f.Events.SelectedRow = row;
+        f.Events.Url = @"C:\doc.pdf";
+
+        Assert.Equal(@"C:\doc.pdf", System.Text.Encoding.UTF8.GetString(row.Icon!));
+    }
 
     [Fact]
     public async Task Firing_LaunchesTheDueEventAndLogsIt()
@@ -420,7 +561,7 @@ public sealed class ViewModelTests
         var f = new Fixture();
         f.Store.Replace([Sample()]);
 
-        var events = new EventsViewModel(f.Store, f.Launcher, f.Background, f.Shell, f.Log);
+        var events = new EventsViewModel(f.Store, f.Launcher, f.Background, f.Shell, f.Log, f.Icons);
 
         Assert.Single(events.Rows);
     }

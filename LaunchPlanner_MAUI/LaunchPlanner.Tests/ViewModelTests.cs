@@ -1,4 +1,4 @@
-using LaunchPlanner.Core.Models;
+﻿using LaunchPlanner.Core.Models;
 using LaunchPlanner.Core.Persistence;
 using LaunchPlanner.Core.Resources;
 using LaunchPlanner.Core.Scheduling;
@@ -66,13 +66,27 @@ public sealed class ViewModelTests
         public string SelectedFolder { get; private set; } = Path.Combine(Path.GetTempPath(), "lp-default");
         public string? Picked { get; set; }
         public bool FailOnSelect { get; set; }
+        public bool DenyPermission { get; set; }
+        public string ChooseCaption => "scegli";
+        public bool IsCloudFileSupported => true;
+        public string? CloudFileName { get; private set; }
+        public string? CloudPick { get; set; }
 
-        public Task<string?> PickFolderAsync() => Task.FromResult(Picked);
+        public Task<bool> PickCloudFileAsync()
+        {
+            if (DenyPermission) throw new UnauthorizedAccessException("permesso negato");
+            CloudFileName = CloudPick;
+            return Task.FromResult(CloudPick is not null);
+        }
+
+        public Task<string?> PickFolderAsync() =>
+            DenyPermission ? throw new UnauthorizedAccessException("permesso negato") : Task.FromResult(Picked);
 
         public void Select(string? folder)
         {
             if (FailOnSelect) throw new IOException("sola lettura");
             SelectedFolder = folder ?? DefaultFolder;
+            CloudFileName = null;
         }
     }
 
@@ -102,6 +116,75 @@ public sealed class ViewModelTests
         Assert.Equal(folder.Picked, settings.DataFolder);
         Assert.True(settings.IsCustomDataFolder);
         Assert.True(settings.IsRestartNeeded);
+    }
+
+    [Fact]
+    public async Task Settings_DeniedStoragePermissionIsLoggedAndChangesNothing()
+    {
+        var folder = new FakeDataFolder { DenyPermission = true };
+        var log = new ActivityLog();
+        var settings = NewSettings(dataFolder: folder, log: log);
+
+        await settings.ChooseDataFolderCommand.ExecuteAsync(null);
+
+        Assert.False(settings.IsRestartNeeded);
+        Assert.False(settings.IsCustomDataFolder);
+        Assert.Contains("permesso negato", log.Text);
+    }
+
+    [Fact]
+    public void Settings_ChooseCaptionComesFromPlatform()
+    {
+        Assert.Equal("scegli", NewSettings().ChooseDataFolderCaption);
+    }
+
+    [Fact]
+    public async Task Settings_ChoosingCloudFileShowsItsNameAndAsksForRestart()
+    {
+        var folder = new FakeDataFolder { CloudPick = "eventi.txt" };
+        var settings = NewSettings(dataFolder: folder);
+
+        await settings.ChooseCloudFileCommand.ExecuteAsync(null);
+
+        Assert.Equal("eventi.txt", settings.DataFolder);
+        Assert.True(settings.IsCustomDataFolder);
+        Assert.True(settings.IsRestartNeeded);
+    }
+
+    [Fact]
+    public async Task Settings_CancelledCloudPickerChangesNothing()
+    {
+        var settings = NewSettings(dataFolder: new FakeDataFolder());
+
+        await settings.ChooseCloudFileCommand.ExecuteAsync(null);
+
+        Assert.False(settings.IsCustomDataFolder);
+        Assert.False(settings.IsRestartNeeded);
+    }
+
+    [Fact]
+    public async Task Settings_UnusableCloudFileIsLogged()
+    {
+        var log = new ActivityLog();
+        var settings = NewSettings(dataFolder: new FakeDataFolder { DenyPermission = true }, log: log);
+
+        await settings.ChooseCloudFileCommand.ExecuteAsync(null);
+
+        Assert.False(settings.IsRestartNeeded);
+        Assert.Contains("permesso negato", log.Text);
+    }
+
+    [Fact]
+    public async Task Settings_UseDefaultLeavesCloudFile()
+    {
+        var folder = new FakeDataFolder { CloudPick = "eventi.txt" };
+        var settings = NewSettings(dataFolder: folder);
+        await settings.ChooseCloudFileCommand.ExecuteAsync(null);
+
+        settings.UseDefaultDataFolderCommand.Execute(null);
+
+        Assert.Null(folder.CloudFileName);
+        Assert.False(settings.IsCustomDataFolder);
     }
 
     [Fact]

@@ -1,4 +1,4 @@
-using LaunchPlanner.Core.Models;
+﻿using LaunchPlanner.Core.Models;
 using LaunchPlanner.Core.Resources;
 using LaunchPlanner.Core.Services;
 using LaunchPlanner.Core.ViewModels;
@@ -24,6 +24,10 @@ public sealed class LanguageServiceTests : IDisposable
         public bool IsSupported => false;
         public string DefaultFolder => "";
         public string SelectedFolder => "";
+        public string ChooseCaption => "";
+        public bool IsCloudFileSupported => false;
+        public string? CloudFileName => null;
+        public Task<bool> PickCloudFileAsync() => Task.FromResult(false);
         public Task<string?> PickFolderAsync() => Task.FromResult<string?>(null);
         public void Select(string? folder) { }
     }

@@ -29,6 +29,7 @@ public sealed partial class SettingsViewModel(
     public string StartupCaption => startup.Caption;
 
     public bool IsDataFolderSupported => dataFolder.IsSupported;
+    public string ChooseDataFolderCaption => dataFolder.ChooseCaption;
 
     public bool IsStartupEnabled
     {
@@ -36,9 +37,13 @@ public sealed partial class SettingsViewModel(
         set => startup.IsEnabled = value;
     }
 
-    public string DataFolder => dataFolder.SelectedFolder;
+    public bool IsCloudFileSupported => dataFolder.IsCloudFileSupported;
 
-    public bool IsCustomDataFolder => !IsSameFolder(dataFolder.SelectedFolder, dataFolder.DefaultFolder);
+    // Dove sta il file degli eventi: il nome del file nel cloud, altrimenti la cartella
+    public string DataFolder => dataFolder.CloudFileName ?? dataFolder.SelectedFolder;
+
+    public bool IsCustomDataFolder =>
+        dataFolder.CloudFileName is not null || !IsSameFolder(dataFolder.SelectedFolder, dataFolder.DefaultFolder);
 
     // Si accende dopo una modifica, perché la nuova cartella vale dal prossimo avvio
     [ObservableProperty]
@@ -47,8 +52,34 @@ public sealed partial class SettingsViewModel(
     [RelayCommand]
     private async Task ChooseDataFolderAsync()
     {
-        var picked = await dataFolder.PickFolderAsync();
+        string? picked;
+        try
+        {
+            picked = await dataFolder.PickFolderAsync();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            log.AddError(string.Format(Strings.Error_DataFolderChangeFailed, ex.Message));
+            return;
+        }
+
         if (picked is not null) ChangeDataFolder(picked);
+    }
+
+    [RelayCommand]
+    private async Task ChooseCloudFileAsync()
+    {
+        try
+        {
+            if (!await dataFolder.PickCloudFileAsync()) return;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            log.AddError(string.Format(Strings.Error_DataFolderChangeFailed, ex.Message));
+            return;
+        }
+
+        OnDataLocationChanged();
     }
 
     [RelayCommand]
@@ -56,7 +87,8 @@ public sealed partial class SettingsViewModel(
 
     private void ChangeDataFolder(string? folder)
     {
-        if (IsSameFolder(folder ?? dataFolder.DefaultFolder, dataFolder.SelectedFolder)) return;
+        if (dataFolder.CloudFileName is null
+            && IsSameFolder(folder ?? dataFolder.DefaultFolder, dataFolder.SelectedFolder)) return;
 
         try
         {
@@ -68,6 +100,11 @@ public sealed partial class SettingsViewModel(
             return;
         }
 
+        OnDataLocationChanged();
+    }
+
+    private void OnDataLocationChanged()
+    {
         IsRestartNeeded = true;
         OnPropertyChanged(nameof(DataFolder));
         OnPropertyChanged(nameof(IsCustomDataFolder));

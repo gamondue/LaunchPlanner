@@ -16,11 +16,21 @@ public sealed class FileEventRepository(string schedulePath, string firedPath) :
             : new ScheduleParseResult([], []);
 
     // Il salvataggio riscrive solo gli eventi validi: commenti e righe errate restano nella copia .bak
-    public void Save(IReadOnlyList<ScheduledEvent> events)
+    public void Save(IReadOnlyList<ScheduledEvent> events) => Replace(ScheduleFile.Format(events));
+
+    // Allinea il file a un testo preso altrove. Se non cambia nulla non scrive,
+    // altrimenti la copia .bak perderebbe la versione precedente
+    public void Mirror(string text)
+    {
+        if (!File.Exists(schedulePath) || File.ReadAllText(schedulePath, Encoding.UTF8) != text)
+            Replace(text);
+    }
+
+    private void Replace(string text)
     {
         if (File.Exists(schedulePath))
             File.Copy(schedulePath, schedulePath + ".bak", overwrite: true);
-        WriteAtomically(schedulePath, ScheduleFile.Format(events));
+        WriteAtomically(schedulePath, text);
     }
 
     public FiredLog LoadFired()

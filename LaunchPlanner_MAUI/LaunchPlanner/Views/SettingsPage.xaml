@@ -27,13 +27,21 @@
             <VerticalStackLayout Spacing="6" IsVisible="{Binding IsDataFolderSupported}">
                 <Label Text="{x:Static res:Strings.Settings_DataFolder_Label}" />
                 <Label Text="{Binding DataFolder}" FontAttributes="Bold" LineBreakMode="MiddleTruncation" />
-                <HorizontalStackLayout Spacing="8">
-                    <Button Text="{x:Static res:Strings.Settings_DataFolder_Choose}"
-                            Command="{Binding ChooseDataFolderCommand}" />
+                <FlexLayout Direction="Row"
+                            Wrap="Wrap"
+                            JustifyContent="Start">
+                    <Button Text="{Binding ChooseDataFolderCaption}"
+                            Command="{Binding ChooseDataFolderCommand}"
+                            Margin="0,0,8,8" />
                     <Button Text="{x:Static res:Strings.Settings_DataFolder_Default}"
                             Command="{Binding UseDefaultDataFolderCommand}"
-                            IsEnabled="{Binding IsCustomDataFolder}" />
-                </HorizontalStackLayout>
+                            IsEnabled="{Binding IsCustomDataFolder}"
+                            Margin="0,0,8,8" />
+                </FlexLayout>
+                <Button Text="{x:Static res:Strings.Settings_CloudFile_Choose}"
+                        Command="{Binding ChooseCloudFileCommand}"
+                        IsVisible="{Binding IsCloudFileSupported}"
+                        HorizontalOptions="Start" />
                 <Label Text="{x:Static res:Strings.Settings_DataFolder_RestartNeeded}"
                        IsVisible="{Binding IsRestartNeeded}" />
             </VerticalStackLayout>

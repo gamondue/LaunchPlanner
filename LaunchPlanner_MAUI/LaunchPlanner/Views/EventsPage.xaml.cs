@@ -11,6 +11,11 @@ namespace LaunchPlanner.Views
         public EventsPage(EventsViewModel viewModel, EventStore store)
         {
             InitializeComponent();
+#if ANDROID
+            // Sul telefono il modulo e l'elenco si dividono la pagina a metà
+            PageGrid.RowDefinitions[0].Height = GridLength.Star;
+            FormScroll.MaximumHeightRequest = double.PositiveInfinity;
+#endif
             BindingContext = viewModel;
             store.EnsureLoaded();
         }

@@ -26,5 +26,4 @@ Per aggiungere un testo si inserisce la stessa chiave in entrambi i file e la si
 Il file degli eventi non si traduce: intestazione, periodicità e date restano uguali in ogni lingua, così resta compatibile con LaunchPlanner_Forms.
 
 ## Prima della pubblicazione
-- L'`ApplicationId` è ancora `com.companyname.launchplanner`.
 - L'icona deriva da un'immagine di soli 48×48 pixel, quindi risulterà sfocata.

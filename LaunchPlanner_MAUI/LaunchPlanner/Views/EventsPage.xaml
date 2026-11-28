@@ -21,8 +21,8 @@
         </Style>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*" RowSpacing="8" Padding="16">
-        <ScrollView MaximumHeightRequest="340">
+    <Grid x:Name="PageGrid" RowDefinitions="Auto,*" RowSpacing="8" Padding="16">
+        <ScrollView x:Name="FormScroll" MaximumHeightRequest="340">
             <VerticalStackLayout Spacing="4">
                 <FlexLayout Wrap="Wrap" JustifyContent="Start">
                     <VerticalStackLayout Style="{StaticResource FieldGroup}">

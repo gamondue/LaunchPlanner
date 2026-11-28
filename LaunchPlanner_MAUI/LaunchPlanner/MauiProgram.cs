@@ -25,7 +25,7 @@ namespace LaunchPlanner
                 .AddSingleton<ILanguageStore, PreferencesLanguageStore>()
                 .AddSingleton<LanguageService>()
                 .AddSingleton<ActivityLog>()
-                .AddSingleton<IEventRepository>(_ => AppPaths.CreateRepository())
+                .AddSingleton<IEventRepository>(services => AppPaths.CreateRepository(services.GetRequiredService<ActivityLog>()))
                 .AddSingleton<EventStore>()
                 .AddSingleton<FiringService>()
                 .AddSingleton<IEventLauncher, PlatformEventLauncher>()

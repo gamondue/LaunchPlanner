@@ -31,7 +31,7 @@
 		<ApplicationTitle>LaunchPlanner</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.launchplanner</ApplicationId>
+		<ApplicationId>it.ingmonti.launchplanner</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
@@ -50,8 +50,8 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
-		<AndroidUseFastDeployment>false</AndroidUseFastDeployment>
-		<EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+		<AndroidUseFastDeployment>true</AndroidUseFastDeployment>
+		<EmbedAssembliesIntoApk>false</EmbedAssembliesIntoApk>
 	</PropertyGroup>
 
 	<!-- Icona dell'exe in Esplora risorse: il resizer ne genera una sola da 64x64, qui c'è fino a 256x256.

@@ -13,11 +13,20 @@
   <data name="Settings_Startup_Windows" xml:space="preserve"><value>Avvia LaunchPlanner all'avvio di Windows</value></data>
   <data name="Settings_Startup_Android" xml:space="preserve"><value>Riarma le sveglie al riavvio del telefono</value></data>
   <data name="Error_StartupChangeFailed" xml:space="preserve"><value>Impossibile modificare l'avvio automatico: {0}</value></data>
-  <data name="Settings_DataFolder_Label" xml:space="preserve"><value>Cartella in cui è memorizzato il file degli eventi</value></data>
+  <data name="Settings_DataFolder_Label" xml:space="preserve"><value>Dove è memorizzato il file degli eventi</value></data>
   <data name="Settings_DataFolder_Choose" xml:space="preserve"><value>Scegli...</value></data>
+  <data name="Settings_DataFolder_UseDownload" xml:space="preserve"><value>Usa la cartella Download/LaunchPlanner</value></data>
+  <data name="Error_StoragePermissionDenied" xml:space="preserve"><value>il permesso di accedere alla cartella Download non è stato concesso</value></data>
+  <data name="Settings_CloudFile_Choose" xml:space="preserve"><value>Scegli un file su OneDrive o Google Drive...</value></data>
+  <data name="Error_CloudFileUnreadable" xml:space="preserve"><value>Impossibile leggere {0}, si usa l'ultima copia salvata sul dispositivo: {1}</value></data>
+  <data name="Error_CloudFileReadOnly" xml:space="preserve"><value>il file scelto è di sola lettura per LaunchPlanner</value></data>
+  <data name="Error_CloudNoLastingAccess" xml:space="preserve"><value>questo servizio non consente un accesso permanente al file</value></data>
+  <data name="Error_NotAScheduleFile" xml:space="preserve"><value>il file scelto non è un file di eventi di LaunchPlanner</value></data>
+  <data name="Error_CloudTimeout" xml:space="preserve"><value>il servizio non ha risposto in tempo</value></data>
+  <data name="Error_NoFilePicker" xml:space="preserve"><value>il selettore di file non è disponibile</value></data>
   <data name="Settings_DataFolder_Default" xml:space="preserve"><value>Usa predefinita</value></data>
-  <data name="Settings_DataFolder_RestartNeeded" xml:space="preserve"><value>La nuova cartella sarà usata al prossimo avvio di LaunchPlanner.</value></data>
-  <data name="Error_DataFolderChangeFailed" xml:space="preserve"><value>Impossibile cambiare la cartella dei dati: {0}</value></data>
+  <data name="Settings_DataFolder_RestartNeeded" xml:space="preserve"><value>La nuova posizione sarà usata al prossimo avvio di LaunchPlanner.</value></data>
+  <data name="Error_DataFolderChangeFailed" xml:space="preserve"><value>Impossibile cambiare la posizione del file degli eventi: {0}</value></data>
 
   <data name="Common_Yes" xml:space="preserve"><value>Sì</value></data>
   <data name="Common_No" xml:space="preserve"><value>No</value></data>

@@ -61,10 +61,25 @@ public interface IDataFolderSettings
     // La cartella scelta: coincide con DefaultFolder se non ne è stata scelta un'altra
     string SelectedFolder { get; }
 
-    // Null se l'utente annulla la finestra di scelta
+    // Vero dove si può scegliere un singolo file, per esempio su OneDrive o Google Drive
+    bool IsCloudFileSupported { get; }
+
+    // Il nome (su Windows il percorso) del file nel cloud in uso, o null se il file degli eventi sta in una cartella
+    string? CloudFileName { get; }
+
+    // Sceglie un file nel cloud, che sostituisce la cartella. Falso se l'utente annulla; lancia
+    // IOException o UnauthorizedAccessException se il file non si può usare
+    Task<bool> PickCloudFileAsync();
+
+    // Il testo del pulsante di scelta, già nella lingua corrente: su Android la sola scelta
+    // possibile è la cartella Download, su Windows una cartella qualsiasi
+    string ChooseCaption { get; }
+
+    // Null se l'utente annulla la finestra di scelta. Chiede i permessi necessari e lancia
+    // UnauthorizedAccessException, con un messaggio per l'utente, se vengono negati
     Task<string?> PickFolderAsync();
 
-    // Null torna alla cartella predefinita. Copia il file degli eventi nella nuova cartella
+    // Null torna alla cartella predefinita. Abbandona l'eventuale file nel cloud. Copia il file degli eventi nella nuova cartella
     // se lì non ce n'è già uno; lancia IOException o UnauthorizedAccessException se non riesce
     void Select(string? folder);
 }
